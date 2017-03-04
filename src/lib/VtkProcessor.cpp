@@ -107,6 +107,8 @@ void VtkProcessor::write_geometry(std::ofstream &file, bool def) {
       file << "9" << std::endl; //VTK_QUAD, see VTK file formats
     } else if (eltype == ElementShape::HEXAHEDRON) {
       file << "12" << std::endl; //VTK_HEXAHEDRON
+    } else if (eltype == ElementShape::TRIANGLE) {
+      file << "5" << std::endl; //VTK_TRIANGLE
     } else if (eltype == ElementShape::LINE) {
       file << "3" << std::endl; //VTK_LINE
     } else {

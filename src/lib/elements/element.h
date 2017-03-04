@@ -150,6 +150,19 @@ class ElementLINE : public Element {
     }
 };
 
+class ElementTRIANGLE : public Element {
+  public:
+    ElementTRIANGLE() {
+      shape = ElementShape::TRIANGLE;
+      nodes = new uint32[getNNodes()];
+    }
+
+    ElementTRIANGLE& operator= (const ElementTRIANGLE& from) {
+      Element::operator= (from);
+      return *this;
+    }
+};
+
 
 class ElementQUAD : public Element {
   public:

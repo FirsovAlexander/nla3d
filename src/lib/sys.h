@@ -161,6 +161,7 @@ enum class ElementType {
   TETRA0,
   QUADTH,
   SurfaceLINETH,
+  TRIANGLE4,
   UNDEFINED
 };
 
