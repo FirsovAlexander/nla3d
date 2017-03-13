@@ -57,9 +57,9 @@ void GaussDenseEquationSolver::substituteEquations(math::SparseSymMatrix* matrix
       // NOTE: SparseMatrix getters works with indexes started from 1
       // TODO: we can fill dense matrix from sparse one in a more optimized way
       matA[i][j] = matrix->value(i+1, j+1);
-
+  cerr << matA << endl;
   bool res = _solve(unknowns, matA.ptr(), rhs, nEq);
-
+  cerr << matA << endl;
   CHECK(res == true) << "ERROR during solution";
 }
 

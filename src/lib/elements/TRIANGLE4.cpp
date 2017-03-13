@@ -115,7 +115,7 @@ void ElementTRIANGLE4::makeC (math::MatSym<3> &C) {
       C.comp(0,0) = 1.*A;
       C.comp(0,1) = my*A; 
       C.comp(1,1) = 1.*A;
-      C.comp(2,2) = (1.-my)/2.*A;
+      C.comp(2,2) = (1.-my)/2.*A; 
     }
 }
 

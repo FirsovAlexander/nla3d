@@ -51,6 +51,12 @@ public:
 
   //strains[M_XX], strains[M_XY], strains[M_XZ], strains[M_YY], strains[M_YZ], strains[M_ZZ]
   math::Vec<6> strains;
+
+  double vol;
+
+private:
+  int permute(int i);
+
 };
 
 } //namespace nla3d

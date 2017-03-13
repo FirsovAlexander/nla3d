@@ -440,9 +440,8 @@ bool readCdbFile(std::string filename, MeshData& md) {
           nNodes = v.size() - 5;
           st = 5;
         }
-
         vector<uint32> enodes;
-
+        
         if (v.size() != st + nNodes) {
           LOG(FATAL) << "Not enought fields to read element nodes";
         }

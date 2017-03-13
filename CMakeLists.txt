@@ -9,7 +9,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 include(cotire)
 
 #options
-set (NLA3D_USE_MKL OFF
+set (NLA3D_USE_MKL ON
      CACHE BOOL "Use MKL library for math routines")
 set (nla3d_multithreaded OFF
     CACHE BOOL "Compile with OpenMP (not supported now)" FORCE)
@@ -24,7 +24,7 @@ set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -msse2")
 
 # TODO: this should depend on compiler
 if(UNIX) 
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -m64 ")
 endif()
 
 if (nla3d_multithreaded)
@@ -53,11 +53,12 @@ if (NLA3D_USE_MKL)
       include_directories(${MKL_INCLUDE_DIR})
 
       # below code works fine only on UNIX systems..
-      if (MKL_MULTI_THREADED)
-        SET(MKL_LINKER_ARGS " -L${MKL_ROOT}/lib -Wl,-rpath,${MKL_ROOT}/lib -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm -ldl")
-      else()
-        SET(MKL_LINKER_ARGS " -L${MKL_ROOT}/lib -Wl,-rpath,${MKL_ROOT}/lib -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -lm -ldl")
-      endif()
+      #if (MKL_MULTI_THREADED)
+      SET(MKL_LINKER_ARGS "-L/home/vitaliy/libs/intel/lib/intel64 -L/home/vitaliy/libs/intel/impi/2017.2.174/intel64/lib/release -L${MKL_ROOT}/lib/intel64 -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -lm -ldl")
+
+      #else()
+      #  SET(MKL_LINKER_ARGS " -L${MKL_ROOT}/lib/intel64/ -L~/libs/intel/lib/intel64/ -Wl,-rpath,${MKL_ROOT}/lib/intel64/ -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -lm -ldl")
+      #endif()
         SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${MKL_LINKER_ARGS}" )
 
     else()
@@ -102,6 +103,9 @@ set (NLA3D_TRUSS_APP_SOURCES "src/main_truss.cpp")
 # an executable to use TRIANGLE4 element
 set (NLA3D_TRIANGLE_APP_SOURCES "src/main_triangle.cpp;src/FEReaders.cpp")
 
+# an executable to use TETERA0 element
+set (NLA3D_TETRA_APP_SOURCES "src/main_tetra.cpp;src/FEReaders.cpp")
+
 #main executable of the project: nla3d.exe program
 add_executable(nla3d ${NLA3D_APP_SOURCES})
 target_link_libraries(nla3d nla3d_lib)
@@ -112,6 +116,9 @@ target_link_libraries(nla3d_truss nla3d_lib)
 
 add_executable(nla3d_triangle ${NLA3D_TRIANGLE_APP_SOURCES})
 target_link_libraries(nla3d_triangle nla3d_lib)
+
+add_executable(tetra ${NLA3D_TETRA_APP_SOURCES})
+target_link_libraries(tetra nla3d_lib)
 
 # Add logic to INSTALL.vcproj to copy app.exe to destination directory
 install (TARGETS nla3d
