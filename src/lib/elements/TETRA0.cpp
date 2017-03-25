@@ -18,7 +18,7 @@ void ElementTETRA0::pre () {
 void ElementTETRA0::buildK() {
   Eigen::MatrixXd matS(4,4);
   matS.setZero();
-  matS << 1. , storage->getNode(getNodeNumber(0)).pos[0] , storage->getNode(getNodeNumber(0)).pos[1] , storage->getNode(getNodeNumber(0)).pos[2] ,
+  matS<< 1. , storage->getNode(getNodeNumber(0)).pos[0] , storage->getNode(getNodeNumber(0)).pos[1] , storage->getNode(getNodeNumber(0)).pos[2] ,
           1. , storage->getNode(getNodeNumber(1)).pos[0] , storage->getNode(getNodeNumber(1)).pos[1] , storage->getNode(getNodeNumber(1)).pos[2] ,
           1. , storage->getNode(getNodeNumber(2)).pos[0] , storage->getNode(getNodeNumber(2)).pos[1] , storage->getNode(getNodeNumber(2)).pos[2] ,
           1. , storage->getNode(getNodeNumber(3)).pos[0] , storage->getNode(getNodeNumber(3)).pos[1] , storage->getNode(getNodeNumber(3)).pos[2];
@@ -72,6 +72,7 @@ void ElementTETRA0::update () {
   
   // restore strains
   math::matBVprod(matB, U, 1.0, strains);
+  math::matBVprod(matC, strains, 1.0, stress);
 }
 
 void ElementTETRA0::makeB(math::Mat<6,12> &B)
@@ -80,30 +81,7 @@ void ElementTETRA0::makeB(math::Mat<6,12> &B)
     double b[4], c[4], d[4];
     //Eigen::MatrixXd mb(3,3), mc(3,3), md(3,3);
     int x=0, y = 1, z=2;
-    /*
-    for (int i = 0; i < 4; i++){ 
-      cerr << permute(i+1) << " " << permute(i+2) << " " << permute(i+3) << endl;
-      mb.setZero();
-      mc.setZero();
-      md.setZero();
-      int z=0, y = 1, z=2;
 
-      mb << 1. , storage->getNode(getNodeNumber(permute(i+1))).pos[y] , storage->getNode(getNodeNumber(permute(i+1))).pos[z] ,
-            1. , storage->getNode(getNodeNumber(permute(i+2))).pos[y] , storage->getNode(getNodeNumber(permute(i+2))).pos[z] ,
-            1. , storage->getNode(getNodeNumber(permute(i+3))).pos[y] , storage->getNode(getNodeNumber(permute(i+3))).pos[z];
-      
-      mc << storage->getNode(getNodeNumber(permute(i+1))).pos[z] , 1.,  storage->getNode(getNodeNumber(permute(i+1))).pos[z] ,
-            storage->getNode(getNodeNumber(permute(i+2))).pos[z] , 1.,  storage->getNode(getNodeNumber(permute(i+2))).pos[z] ,
-            storage->getNode(getNodeNumber(permute(i+3))).pos[z] , 1.,  storage->getNode(getNodeNumber(permute(i+3))).pos[z];
-
-      md << storage->getNode(getNodeNumber(permute(i+1))).pos[z] ,  storage->getNode(getNodeNumber(permute(i+1))).pos[y] , 1., 
-            storage->getNode(getNodeNumber(permute(i+2))).pos[z] ,  storage->getNode(getNodeNumber(permute(i+2))).pos[y] , 1.,
-            storage->getNode(getNodeNumber(permute(i+3))).pos[z] ,  storage->getNode(getNodeNumber(permute(i+3))).pos[y] , 1.;
-
-      b[i] = mb.determinant();
-      c[i] = mc.determinant();
-      d[i] = md.determinant();
-    }*/
     double x12 = storage->getNode(getNodeNumber(0)).pos[x] - storage->getNode(getNodeNumber(1)).pos[x];
     double x13 = storage->getNode(getNodeNumber(0)).pos[x] - storage->getNode(getNodeNumber(2)).pos[x];
     double x14 = storage->getNode(getNodeNumber(0)).pos[x] - storage->getNode(getNodeNumber(3)).pos[x];
@@ -174,18 +152,18 @@ void ElementTETRA0::makeB(math::Mat<6,12> &B)
 }
 
 void ElementTETRA0::makeC (math::MatSym<6> &C) {
-  const double A = E*(1.-my)/((1.+my)*(1.-2.*my));
+  const double A = E/((1.+my)*(1.-2.*my));
 
-  C.comp(0,0) = 1.*A;
-  C.comp(0,1) = my/(1-my)*A;
-  C.comp(0,2) = my/(1-my)*A;
-  C.comp(1,1) = 1.*A;
-  C.comp(1,2) = my/(1-my)*A;
-  C.comp(2,2) = 1.*A;
+  C.comp(0,0) = (1.-my)*A;
+  C.comp(0,1) = my*A;
+  C.comp(0,2) = my*A;
+  C.comp(1,1) = (1.-my)*A;
+  C.comp(1,2) = my*A;
+  C.comp(2,2) = (1.-my)*A;
 
-  C.comp(3,3) = (1.-2.*my)/(2.*(1.-my))*A;
-  C.comp(4,4) = (1.-2.*my)/(2.*(1.-my))*A;
-  C.comp(5,5) = (1.-2.*my)/(2.*(1.-my))*A;
+  C.comp(3,3) = (1./2.-my)*A;
+  C.comp(4,4) = (1./2.-my)*A;
+  C.comp(5,5) = (1./2.-my)*A;
 }
 
 int ElementTETRA0::permute(int i){
@@ -195,4 +173,35 @@ int ElementTETRA0::permute(int i){
     return i;
 }
 
+bool ElementTETRA0::getScalar(double* scalar, scalarQuery query, uint16 gp, const double scale) {
+  if (query == scalarQuery::VOL){
+     *scalar += vol;
+    return true;
+  }
+  return false;
+}
+
+bool  ElementTETRA0::getTensor(math::MatSym<3>* tensor, tensorQuery query, uint16 gp, const double scale) {
+  if (query == tensorQuery::C){
+      tensor->data[0] += strains[0];
+      tensor->data[1] += strains[3];
+      tensor->data[2] += strains[4];
+      tensor->data[3] += strains[1];
+      tensor->data[4] += strains[5];
+      tensor->data[5] += strains[2];
+      return true;
+  }
+  if (query == tensorQuery::E){
+    tensor->data[0] += stress[0];
+    tensor->data[1] += stress[3];
+    tensor->data[2] += stress[4];
+    tensor->data[3] += stress[1];
+    tensor->data[4] += stress[5];
+    tensor->data[5] += stress[2];
+    return true;
+  }
+
+  
+  return false;
+}
 } //namespace nla3d

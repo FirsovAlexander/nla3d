@@ -106,10 +106,12 @@ set (NLA3D_TRIANGLE_APP_SOURCES "src/main_triangle.cpp;src/FEReaders.cpp")
 # an executable to use TETERA0 element
 set (NLA3D_TETRA_APP_SOURCES "src/main_tetra.cpp;src/FEReaders.cpp")
 
+# an executable to use TETERA0 element
+set (NLA3D_HOM_APP_SOURCES "src/main_hom.cpp;src/FEReaders.cpp")
+
 #main executable of the project: nla3d.exe program
 add_executable(nla3d ${NLA3D_APP_SOURCES})
 target_link_libraries(nla3d nla3d_lib)
-
 
 add_executable(nla3d_truss ${NLA3D_TRUSS_APP_SOURCES})
 target_link_libraries(nla3d_truss nla3d_lib)
@@ -119,6 +121,9 @@ target_link_libraries(nla3d_triangle nla3d_lib)
 
 add_executable(tetra ${NLA3D_TETRA_APP_SOURCES})
 target_link_libraries(tetra nla3d_lib)
+
+add_executable(hom ${NLA3D_HOM_APP_SOURCES})
+target_link_libraries(hom nla3d_lib)
 
 # Add logic to INSTALL.vcproj to copy app.exe to destination directory
 install (TARGETS nla3d

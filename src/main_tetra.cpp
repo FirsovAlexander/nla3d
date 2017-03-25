@@ -16,7 +16,7 @@ int main(){
 	FEStorage storage;
 	
 	MeshData md;
-	std::string modelFilename = "../test/TETRA/tetra2.dat";
+	std::string modelFilename = "../test/TETRA/tetra2_coarse.dat";
 	if (!readCdbFile(modelFilename, md)) {
 		LOG(FATAL) << "Can't read FE info from " << modelFilename << "file. exiting..";
 	}
@@ -28,17 +28,16 @@ int main(){
 	for (uint32 i = 0; i < sind.size(); i++) {
 		storage.getNode(sind[i]).pos = md.nodesPos[i];
 	}
-
 	// add elements
-	for (int i = 1; i<4;i++){
-		ind = md.getCellsByAttribute("TYPE", i);
+	for (int isolid = 1; isolid < 4;isolid++){
+		ind = md.getCellsByAttribute("TYPE", isolid);
 		sind = storage.createElements(ind.size(), ElementType::TETRA0);
 		for (uint32 i = 0; i < sind.size(); i++) {
 			ElementTETRA0& el = (ElementTETRA0&)storage.getElement(sind[i]);
-			if (i == 1)
+			if (isolid == 1)
 				el.E = 2.e11;
 			else
-				el.E = 2.e11/3.;
+				el.E = 2.e11;
 			el.my = 0.3;
 			el.getNodeNumber(0) = md.cellNodes[ind[i]][0];
 			el.getNodeNumber(1) = md.cellNodes[ind[i]][1];
@@ -47,13 +46,13 @@ int main(){
 		}
 	}
 
-	for (auto v : md.feComps["FIX"].list) {
+	for (auto v : md.feComps["X0"].list) {
 		solver.addFix(v, Dof::UX);
 		solver.addFix(v, Dof::UY);
 		solver.addFix(v, Dof::UZ);
 	}
-	for (auto v : md.feComps["DISP"].list) {
-		solver.addFix(v, Dof::UX, 0.001);
+	for (auto v : md.feComps["X1"].list) {
+		solver.addFix(v, Dof::UY, 0.001);
 	}
 	
 	solver.attachFEStorage (&storage);
@@ -63,6 +62,7 @@ int main(){
 
 	VtkProcessor* vtk = new VtkProcessor (&storage, "tetra");
     solver.addPostProcessor(vtk);
+    vtk->writeAllResults();
 
     solver.solve();
 }

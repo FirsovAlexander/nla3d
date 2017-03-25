@@ -175,6 +175,7 @@ const char* const elTypeLabels[] = {
   "TETRA1",
   "QUADTH",
   "SurfaceLINETH",
+  "TRIANGLE4",
   "UNDEFINED"
 };
 

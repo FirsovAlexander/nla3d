@@ -54,6 +54,10 @@ public:
 
   double vol;
 
+  //postproc procedures
+  bool getScalar(double* scalar, scalarQuery code, uint16 gp, const double scale);
+  bool getTensor(math::MatSym<3>* tensor, tensorQuery code, uint16 gp, const double scale);
+
 private:
   int permute(int i);
 
