@@ -101,7 +101,7 @@ void ElementTRIANGLE4::makeB(math::Mat<3,6> &B)
 }
 
 void ElementTRIANGLE4::makeC (math::MatSym<3> &C) {
-    //Плоскодеформированное состояние
+    //Plane deformed state
     if (state == PlaneState::Strain){
       const double A = E*(1.-my)/((1.+my)*(1.-2.*my));
       C.comp(0,0) = 1.*A;
@@ -109,8 +109,8 @@ void ElementTRIANGLE4::makeC (math::MatSym<3> &C) {
       C.comp(1,1) = 1.*A;
       C.comp(2,2) = (1.-2.*my)/(2.*(1.-my))*A;
     }
+    //Plane stress state
     if (state == PlaneState::Stress){
-      //Плоское напряженное состояние
       const double A = E*(1.-my*my);
       C.comp(0,0) = 1.*A;
       C.comp(0,1) = my*A; 

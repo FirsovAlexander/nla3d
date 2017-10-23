@@ -7,7 +7,6 @@
 #include "elements/SOLID81.h"
 #include "elements/TRUSS3.h"
 #include "elements/TETRA0.h"
-#include "elements/TETRA1.h"
 #include "elements/QUADTH.h"
 #include "elements/TRIANGLE4.h"
 

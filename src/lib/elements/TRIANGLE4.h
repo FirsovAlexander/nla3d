@@ -50,10 +50,10 @@ public:
 
   // stresses in the element (calculated after the solving of the global equation system in
   // update() function.
-  //stress[M_XX], stress[M_XY], stress[M_XZ], stress[M_YY], stress[M_YZ], stress[M_ZZ]
+  //stress[M_X], stress[M_X], stress[M_XY]
   math::Vec<3> stress; // Cauchy stresses
 
-  //strains[M_XX], strains[M_XY], strains[M_XZ], strains[M_YY], strains[M_YZ], strains[M_ZZ]
+  //strains[M_X], strains[M_Y], strains[M_XY]
   math::Vec<3> strains;
 
   PlaneState state;

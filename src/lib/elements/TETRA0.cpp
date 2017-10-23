@@ -38,7 +38,6 @@ void ElementTETRA0::buildK() {
 
   // fill here matC
   makeC(matC);
-  //cerr << matC.toMat() <<endl;
   // fill here matB
   makeB(matB);
 
