@@ -1,6 +1,9 @@
 cmake_minimum_required (VERSION 2.6)
 
 project (NLA3D)
+
+include(GNUInstallDirs)
+
 # Use mine findFoo.cmake modules
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 
@@ -110,6 +113,12 @@ target_link_libraries(nla3d_truss nla3d_lib)
 # Add logic to INSTALL.vcproj to copy app.exe to destination directory
 install (TARGETS nla3d
      RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin)
+
+
+file (GLOB READERS_HEADERS "src/*.h" )
+
+install(FILES ${READERS_HEADERS}
+     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # taken from stackoverflow: How to copy DLL files into the same folder as the executable using CMake
 # add_custom_command(TARGET nla3d POST_BUILD
