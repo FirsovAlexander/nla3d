@@ -39,7 +39,7 @@ void ElementTETRA0::buildK() {
   // fill here matC
   makeC(matC);
   // fill here matB
-  makeB(matB);
+  makeB(matB);  
 
   math::matBTDBprod(matB, matC, vol, matKe);
   // start assemble procedure. Here we should provide element stiffness matriz and an order of 
@@ -70,7 +70,7 @@ void ElementTETRA0::update () {
   }
   
   // restore strains
-  math::matBVprod(matB, U, 1.0, strains);
+  math::matBVprod(matB, U, -1.0, strains);
   math::matBVprod(matC, strains, 1.0, stress);
 }
 
@@ -182,21 +182,21 @@ bool ElementTETRA0::getScalar(double* scalar, scalarQuery query, uint16 gp, cons
 
 bool  ElementTETRA0::getTensor(math::MatSym<3>* tensor, tensorQuery query, uint16 gp, const double scale) {
   if (query == tensorQuery::C){
-      tensor->data[0] += strains[0];
-      tensor->data[1] += strains[3];
-      tensor->data[2] += strains[4];
-      tensor->data[3] += strains[1];
-      tensor->data[4] += strains[5];
-      tensor->data[5] += strains[2];
+      tensor->comp(0,0) += strains[0];
+      tensor->comp(1,1) += strains[1];
+      tensor->comp(2,2) += strains[2];
+      tensor->comp(0,1) += strains[3];
+      tensor->comp(1,2) += strains[4];
+      tensor->comp(0,2) += strains[5];
       return true;
   }
   if (query == tensorQuery::E){
-    tensor->data[0] += stress[0];
-    tensor->data[1] += stress[3];
-    tensor->data[2] += stress[4];
-    tensor->data[3] += stress[1];
-    tensor->data[4] += stress[5];
-    tensor->data[5] += stress[2];
+    tensor->comp(0,0) += stress[0];
+    tensor->comp(1,1) += stress[1];
+    tensor->comp(2,2) += stress[2];
+    tensor->comp(0,1) += stress[3];
+    tensor->comp(1,2) += stress[4];
+    tensor->comp(0,2) += stress[5];
     return true;
   }
 

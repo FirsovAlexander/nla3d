@@ -46,10 +46,10 @@ public:
 
   // stresses in the element (calculated after the solving of the global equation system in
   // update() function.
-  //stress[M_XX], stress[M_XY], stress[M_XZ], stress[M_YY], stress[M_YZ], stress[M_ZZ]
+  //stress[M_XX], stress[M_YY], stress[M_ZZ], stress[M_XY], stress[M_YZ], stress[M_XZ]
   math::Vec<6> stress; // Cauchy stresses
 
-  //strains[M_XX], strains[M_XY], strains[M_XZ], strains[M_YY], strains[M_YZ], strains[M_ZZ]
+  //strains[M_XX], strains[M_YY], strains[M_ZZ], strains[M_XY], strains[M_YZ], strains[M_XZ]
   math::Vec<6> strains;
 
   double vol;
