@@ -17,5 +17,6 @@ cotire(nla3d_lib)
 # install library to install path
 install(TARGETS nla3d_lib
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
