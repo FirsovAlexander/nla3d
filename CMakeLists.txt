@@ -27,7 +27,7 @@ set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -msse2")
 
 # TODO: this should depend on compiler
 if(UNIX) 
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -fPIC")
 endif()
 
 # Linking on Mac Os was not working without this, see `cmake  --help-policy CMP0042`
