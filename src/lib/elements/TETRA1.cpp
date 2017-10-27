@@ -67,6 +67,7 @@ void ElementTETRA1::update () {
     U[i] = storage->getNodeDofSolution(getNodeNumber(i), Dof::TEMP);
   }
 
+  flux.zero();
   // restore fluxes
   math::matBVprod(matB, U, k, flux);
 }
