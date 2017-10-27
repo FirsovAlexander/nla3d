@@ -251,6 +251,74 @@ double Tokenizer::tokenDouble(size_t ind) {
   return std::stod(tokens[ind]);
 }
 
+bool readNeuFile(std::string filename, MeshData& md)
+{
+  uint32 n_number, en;
+  ifstream file(filename);
+  if (!file) {
+    LOG(WARNING) << "Can't open neu file " << filename;
+    return false;
+  }
+  md.clear();
+   
+  // read nodes section 
+  int nodesCount;
+  file >> nodesCount;    
+  md.nodesPos.resize(nodesCount);
+  md.nodesNumbers.resize(nodesCount);
+  
+  for (int i(0); i < nodesCount; ++i) { 
+    for (int j(0);j < 3; ++j) { /// @todo размерность ?..
+      file >> md.nodesPos[i][j];
+    }
+    md.nodesNumbers.push_back(i+1);
+  }           
+  md.cellIntData.insert(std::make_pair("MAT", std::vector<uint32>()));
+  
+  // read volumes section 
+  int volumesCount;
+  file >> volumesCount; 
+  md.cellNumbers.reserve(volumesCount);
+  for (int cellNum(0); cellNum < volumesCount; ++cellNum) {
+    int mat_num;
+    file >> mat_num;    
+    md.cellIntData["MAT"].push_back(mat_num);    
+    vector<uint32> enodes;
+    enodes.resize(4);
+    for (int j(0);j < 4; ++j) { /// @todo размерность?...      
+      file >> enodes[j];
+    }
+    for (int j(4);j < 8; ++j) {
+        enodes.push_back(enodes[3]);
+    }
+    md.cellNodes.push_back(enodes);
+    md.cellNumbers.push_back(cellNum + 1);
+  }
+  
+  // read surfaces section
+  int surfaceCount;
+  file >> surfaceCount;  
+  for (int surfNum(0); surfNum < surfaceCount; ++surfNum) {
+    int bc;
+    file >> bc;
+    string compname = std::to_string(bc);
+    if (md.feComps.find(compname) == md.feComps.end()) {
+      FEComponent comp;
+      comp.name = compname;
+      comp.type = FEComponent::ELEMENTS;
+      md.feComps.insert(std::make_pair(comp.name, comp));      
+    }    
+    for (int j(0);j < 3; ++j) { 
+      int node;
+      file >> node;
+      md.feComps[compname].list.push_back(node);
+    }
+  }
+  file.close();
+  return true;
+}
+
+
 
 bool readCdbFile(std::string filename, MeshData& md) {
   uint32 n_number, en;
