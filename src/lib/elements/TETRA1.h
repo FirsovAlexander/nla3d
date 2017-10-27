@@ -40,9 +40,10 @@ public:
   // conductivity coef ( W/(K m), for example)
   double k = 0.0;
 
-  // stresses in the element (calculated after the solving of the global equation system in
   // update() function.
-  //stress[M_XX], stress[M_YY], stress[M_ZZ]
+  // temperature gradient
+  math::Vec<3> gradT; //
+  //flux[X], flux[Y], flux[Z]
   math::Vec<3> flux; //
 
   double vol;
