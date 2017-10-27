@@ -252,6 +252,74 @@ double Tokenizer::tokenDouble(size_t ind) {
   return std::stod(tokens[ind]);
 }
 
+bool readNeuFile(std::string filename, MeshData& md)
+{
+  uint32 n_number, en;
+  ifstream file(filename);
+  if (!file) {
+    LOG(WARNING) << "Can't open neu file " << filename;
+    return false;
+  }
+  md.clear();
+   
+  // read nodes section 
+  int nodesCount;
+  file >> nodesCount;    
+  md.nodesPos.resize(nodesCount);
+  md.nodesNumbers.resize(nodesCount);
+  
+  for (int node_num(0); node_num < nodesCount; ++node_num) { 
+    for (int col(0); col < 3; ++col) {
+      file >> md.nodesPos[node_num][col];
+    }
+    md.nodesNumbers.push_back(node_num+1);
+  }           
+  md.cellIntData.insert(std::make_pair("MAT", std::vector<uint32>()));
+  
+  // read volumes section 
+  int volumesCount;
+  file >> volumesCount; 
+  md.cellNumbers.reserve(volumesCount);
+  for (int volume_num(0); volume_num < volumesCount; ++volume_num) {
+    int mat_num;
+    file >> mat_num;    
+    md.cellIntData["MAT"].push_back(mat_num);    
+    vector<uint32> enodes;
+    enodes.resize(4);
+    for (int node_num(0); node_num < 4; ++node_num) {    
+      file >> enodes[node_num];
+    }
+    for (int node_num(4); node_num < 8; ++node_num) {
+        enodes.push_back(enodes[3]);
+    }
+    md.cellNodes.push_back(enodes);
+    md.cellNumbers.push_back(volume_num + 1);
+  }
+  
+  // read surfaces section
+  int surfaceCount;
+  file >> surfaceCount;  
+  for (int surfNum(0); surfNum < surfaceCount; ++surfNum) {
+    int bc;
+    file >> bc;
+    string compname = std::to_string(bc);
+    if (md.feComps.find(compname) == md.feComps.end()) {
+      FEComponent comp;
+      comp.name = compname;
+      comp.type = FEComponent::ELEMENTS;
+      md.feComps.insert(std::make_pair(comp.name, comp));      
+    }    
+    for (int node_num(0); node_num < 3; ++node_num) { 
+      int node;
+      file >> node;
+      md.feComps[compname].list.push_back(node);
+    }
+  }
+  file.close();
+  return true;
+}
+
+
 
 bool readCdbFile(std::string filename, MeshData& md) {
   uint32 n_number, en;
