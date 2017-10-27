@@ -266,7 +266,7 @@ bool readNeuFile(std::string filename, MeshData& md)
   int nodesCount;
   file >> nodesCount;    
   md.nodesPos.resize(nodesCount);
-  md.nodesNumbers.resize(nodesCount);
+  md.nodesNumbers.reserve(nodesCount);
   
   for (int node_num(0); node_num < nodesCount; ++node_num) { 
     for (int col(0); col < 3; ++col) {
