@@ -39,7 +39,7 @@ void ElementTETRA1::buildK() {
   // fill here matC
   makeC(matC);
   // fill here matB
-  makeB(matB);  
+  makeB(matB);
 
   math::matBTDBprod(matB, matC, vol, matKe);
   // start assemble procedure. Here we should provide element stiffness matrix and an order of 
@@ -66,9 +66,9 @@ void ElementTETRA1::update () {
   for (uint16 i = 0; i < getNNodes(); i++) {
     U[i] = storage->getNodeDofSolution(getNodeNumber(i), Dof::TEMP);
   }
-  
+
   // restore fluxes
-  math::matBVprod(matB, U, (-1)*k, flux);
+  math::matBVprod(matB, U, k, flux);
 }
 
 void ElementTETRA1::makeB(math::Mat<3,4> &B)
@@ -134,11 +134,18 @@ void ElementTETRA1::makeB(math::Mat<3,4> &B)
     d[3] = x13*y21-x12*y31;
 
     const double A = -1./6./vol;
-    for (int i = 0; i < 4; i++){
-      B_L[0 + 3*i] = b[i]*A;
-      B_L[1 + 3*i] = c[i]*A;
-      B_L[2 + 3*i] = d[i]*A;
-    }
+    B_L[0] = b[0]*A;
+    B_L[1] = b[1]*A;
+    B_L[2] = b[2]*A;
+    B_L[3] = b[3]*A;
+    B_L[4] = c[0]*A;
+    B_L[5] = c[1]*A;
+    B_L[6] = c[2]*A;
+    B_L[7] = c[3]*A;
+    B_L[8] = d[0]*A;
+    B_L[9] = d[1]*A;
+    B_L[10] = d[2]*A;
+    B_L[11] = d[3]*A;
 }
 
 void ElementTETRA1::makeC (math::MatSym<3> &C) {
@@ -147,12 +154,6 @@ void ElementTETRA1::makeC (math::MatSym<3> &C) {
     C.comp(2,2) = (-1)*k;
 }
 
-int ElementTETRA1::permute(int i){
-  if (i > 3)
-    return i -4;
-  else 
-    return i;
-}
 
 bool ElementTETRA1::getScalar(double* scalar, scalarQuery query, uint16 gp, const double scale) {
   if (query == scalarQuery::VOL){
@@ -162,28 +163,15 @@ bool ElementTETRA1::getScalar(double* scalar, scalarQuery query, uint16 gp, cons
   return false;
 }
 
-bool  ElementTETRA1::getTensor(math::MatSym<3>* tensor, tensorQuery query, uint16 gp, const double scale) {
-  /*
-  if (query == tensorQuery::C){
-      tensor->comp(0,0) += strains[0];
-      tensor->comp(1,1) += strains[1];
-      tensor->comp(2,2) += strains[2];
-      tensor->comp(0,1) += strains[3];
-      tensor->comp(1,2) += strains[4];
-      tensor->comp(0,2) += strains[5];
+bool  ElementTETRA1::getVector(math::Vec<3>* vector, vectorQuery query, uint16 gp, const double scale) {
+  switch (query) {
+    case vectorQuery::FLUX:
+      (*vector)[0] += flux[0];
+      (*vector)[1] += flux[1];
+      (*vector)[2] += flux[2];
       return true;
-  }
-  if (query == tensorQuery::E){
-    tensor->comp(0,0) += stress[0];
-    tensor->comp(1,1) += stress[1];
-    tensor->comp(2,2) += stress[2];
-    tensor->comp(0,1) += stress[3];
-    tensor->comp(1,2) += stress[4];
-    tensor->comp(0,2) += stress[5];
-    return true;
-  }
-  */
-  
+  }  
   return false;
 }
+
 } //namespace nla3d
