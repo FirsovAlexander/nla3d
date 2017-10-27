@@ -42,6 +42,14 @@ public:
   // Poissons coef.
   double my = 0.0;
 
+  //tensile strength
+  //stretching
+  double pE = 0.0;
+  //compress
+  double pC = 0.0;
+  //shear
+  double pSh = 0.0;
+
   // stresses in the element (calculated after the solving of the global equation system in
   // update() function.
   //stress[M_XX], stress[M_YY], stress[M_ZZ], stress[M_XY], stress[M_YZ], stress[M_XZ]
