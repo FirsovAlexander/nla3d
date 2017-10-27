@@ -1,5 +1,5 @@
 #include "elements/TETRA0.h"
-#include <iostream>
+
 using namespace std;
 
 namespace nla3d {
@@ -14,7 +14,7 @@ void ElementTETRA0::pre () {
   }
 }
 
-// here stiffness matriz is built
+// here stiffness matrix is built
 void ElementTETRA0::buildK() {
   Eigen::MatrixXd matS(4,4);
   matS.setZero();
@@ -24,15 +24,15 @@ void ElementTETRA0::buildK() {
           1. , storage->getNode(getNodeNumber(3)).pos[0] , storage->getNode(getNodeNumber(3)).pos[1] , storage->getNode(getNodeNumber(3)).pos[2];
 
   vol = matS.determinant()/6.;
-  // Ke will store element stiffness matriz in global coordinates
+  // Ke will store element stiffness matrix in global coordinates
   math::MatSym<12> matKe;
   matKe.zero();
 
-  // matB is strain matriz
+  // matB is strain matrix
   math::Mat<6,12> matB;
   matB.zero();
 
-  // matC is 3d elastic  matriz
+  // matC is 3d elastic  matrix
   math::MatSym<6> matC;
   matC.zero();
 
@@ -42,18 +42,18 @@ void ElementTETRA0::buildK() {
   makeB(matB);  
 
   math::matBTDBprod(matB, matC, vol, matKe);
-  // start assemble procedure. Here we should provide element stiffness matriz and an order of 
-  // nodal DoFs in the matriz.
+  // start assemble procedure. Here we should provide element stiffness matrix and an order of 
+  // nodal DoFs in the matrix.
   assembleK(matKe, {Dof::UX, Dof::UY, Dof::UZ});
 }
 
 // after solution it's handy to calculate stresses, strains and other stuff in elements.
 void ElementTETRA0::update () {
-  // matB is strain matriz
+  // matB is strain matrix
   math::Mat<6,12> matB;
   matB.zero();
 
-  // matC is 3d elastic  matriz
+  // matC is 3d elastic  matrix
   math::MatSym<6> matC;
   matC.zero();
 

@@ -27,8 +27,13 @@ set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -msse2")
 
 # TODO: this should depend on compiler
 if(UNIX) 
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -fPIC")
 endif()
+
+# Linking on Mac Os was not working without this, see `cmake  --help-policy CMP0042`
+if (APPLE)
+       set(CMAKE_MACOSX_RPATH ON)
+endif (APPLE)
 
 if (nla3d_multithreaded)
   if(UNIX)
@@ -57,11 +62,12 @@ if (NLA3D_USE_MKL)
 
       # below code works fine only on UNIX systems..
       if (MKL_MULTI_THREADED)
-        SET(MKL_LINKER_ARGS " -L${MKL_ROOT}/lib/intel64 -Wl,-rpath,${MKL_ROOT}/lib/intel64,--no-as-needed -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm -ldl")
+          SET(MKL_LINKER_ARGS "${MKL_LINKER_FLAGS} -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm -ldl")
       else()
-        SET(MKL_LINKER_ARGS " -L${MKL_ROOT}/lib/intel64 -Wl,-rpath,${MKL_ROOT}/lib/intel64,--no-as-needed -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -lm -ldl")
+        SET(MKL_LINKER_ARGS "${MKL_LINKER_FLAGS} -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -lm -ldl")
       endif()
-        SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${MKL_LINKER_ARGS}" )
+      SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${MKL_LINKER_ARGS}" )
+      SET( CMAKE_SHARED_LINKER_FLAGS  "${CMAKE_SHARED_LINKER_FLAGS} ${MKL_LINKER_ARGS}" )
 
     else()
       message(WARNING "Can't find MKL")
@@ -114,14 +120,13 @@ target_link_libraries(nla3d_truss nla3d_lib)
 install (TARGETS nla3d
      RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin)
 
-
-file (GLOB READERS_HEADERS "src/*.h" )
-
-install(FILES ${READERS_HEADERS}
-     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+# install headers to install path
+install(DIRECTORY "src/" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/nla3d"
+          FILES_MATCHING PATTERN "*.h")
 
 # taken from stackoverflow: How to copy DLL files into the same folder as the executable using CMake
 # add_custom_command(TARGET nla3d POST_BUILD
 #  COMMAND ${CMAKE_COMMAND} -E copy_if_different
 #  ${MKL_IOMP5_RUNTIME_LIB}
 #  $<TARGET_FILE_DIR:nla3d>)
+

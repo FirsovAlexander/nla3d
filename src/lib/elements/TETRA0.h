@@ -7,7 +7,6 @@
 
 namespace nla3d {
 
-
 class ElementTETRA0 : public ElementTETRA {
 public:
 // ElementTETRA () defines number of nodes in the element, number of dimensions (2D or 3D
@@ -17,7 +16,7 @@ public:
 
 // pre() - functions that is called just before the solution procedures. pre() should register
 // which element DoFs and nodal DoFs will be incorporated in the element stiffness matrix. On this
-// step element alsoo need to initialize any variables that it is going to use in solution process
+// step element also need to initialize any variables that it is going to use in solution process
 // (strains and stresses in integration points in finite deformations analysis, for example).
 // ElementTETRA::pre () registers Dof::UX, Dof::UY, Dof::UZ as DoFs in every node.
   void pre();
@@ -28,13 +27,12 @@ public:
 // matrix. Fro this purpose here is a special procedure in base class Element::assemble(..). Also,
 // the element should assemble right hand side (rhs) of equations related to this element
 // (especially used in non-linear analysis).
-//
   void buildK();
+
 // update() - the function updates internal state of the element based on found solution of
 // global equation system. For example, here you can calculate stresses in the element which depends
 // on found DoFs solution.
   void update();
-
 
   void makeB (math::Mat<6,12> &B);
   void makeC (math::MatSym<6> &C);
@@ -60,7 +58,6 @@ public:
 
 private:
   int permute(int i);
-
 };
 
 } //namespace nla3d

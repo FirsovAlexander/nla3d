@@ -120,7 +120,7 @@ Then you can deploy makefiles dy calling ```cmake``` program:
 ```
 mkdir build
 cd build
-cmake .. -DCMAKE_INSTALL_PREFIX="path_to_inst_dir"
+cmake ..
 ```
 
 One will see the output like this:
@@ -147,7 +147,6 @@ Then one can just launch the compilation:
 
 ```
 cmake --build . --config Release
-make install
 ```
 
 And after launch the functional tests:
