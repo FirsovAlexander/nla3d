@@ -40,7 +40,7 @@ public:
   // conductivity coef ( W/(K m), for example)
   double k = 0.0;
 
-  //linear expansion
+  //extension coef
   double alpha = 0.0;
 
   // update() function.
