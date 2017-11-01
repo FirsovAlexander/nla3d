@@ -104,8 +104,8 @@ int main (int argc, char* argv[]) {
     // check stress results with Ansys data
     if (res_stress_filename != "") {
         auto ans_stresses = readStressData(res_stress_filename);
+        math::MatSym<3> mat;
         for (uint32 i = 1; i <= storage.nNodes(); i++) {
-            math::MatSym<3> mat;
             mat.zero();
             storage.getElement(i).getTensor(&mat, tensorQuery::E);
             CHECK(mat.compare(ans_stresses[i - 1], 1.0e-3));
