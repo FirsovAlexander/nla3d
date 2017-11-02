@@ -90,7 +90,7 @@ void ElementTETRA0::update () {
   //calc term strains
   if (T > 0.){
     math::Vec<6> tStrains = {alpha*T,alpha*T,alpha*T,0.,0.,0.};
-    strains = strains+tStrains;
+    strains = strains-tStrains;
   }
 
   math::matBVprod(matC, strains, 1.0, stress);
