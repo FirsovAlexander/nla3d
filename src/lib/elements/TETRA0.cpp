@@ -85,6 +85,7 @@ void ElementTETRA0::update () {
   }
   
   // restore strains
+  strains.zero();
   math::matBVprod(matB, U, -1.0, strains);
 
   //calc term strains
@@ -92,7 +93,7 @@ void ElementTETRA0::update () {
     math::Vec<6> tStrains = {alpha*T,alpha*T,alpha*T,0.,0.,0.};
     strains = strains-tStrains;
   }
-
+  stress.zero();
   math::matBVprod(matC, strains, 1.0, stress);
 }
 
