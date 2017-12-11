@@ -45,21 +45,22 @@ void ElementTETRA0::buildK() {
   // start assemble procedure. Here we should provide element stiffness matrix and an order of 
   // nodal DoFs in the matrix.
 
+  math::Vec<12> Fe;
+  Fe.zero();
+
+  math::Mat<12,6> matBT;
+  matBT = matB.transpose();
+  math::Mat<12,6> matBTC;
+  math::Mat<6,6> matCt = matC.toMat();
+  matBTC = matBT*matCt;
+  
   if (T > 0){
     //temp node forces
-    math::Vec<12> Fe;
     math::Vec<6> tStrains = {alpha*T,alpha*T,alpha*T,0.,0.,0.};
-    math::Mat<12,6> matBT;
-    matBT = matB.transpose();
-    math::Mat<12,6> matBTC;
-    math::Mat<6,6> matCt = matC.toMat();
-    matBTC = matBT*matCt;
     math::matBVprod(matBTC, tStrains, (-1)*vol, Fe);
-    assembleK(matKe, Fe,{Dof::UX, Dof::UY, Dof::UZ});
   }
-  else{
-    assembleK(matKe, {Dof::UX, Dof::UY, Dof::UZ});
-  }
+  math::matBVprod(matBTC, strains, (-1)*vol, Fe);
+  assembleK(matKe, Fe,{Dof::UX, Dof::UY, Dof::UZ});
 }
 
 // after solution it's handy to calculate stresses, strains and other stuff in elements.
@@ -85,6 +86,7 @@ void ElementTETRA0::update () {
   }
   
   // restore strains
+  math::Vec<6> strains0 = strains;
   strains.zero();
   math::matBVprod(matB, U, -1.0, strains);
 
@@ -93,6 +95,7 @@ void ElementTETRA0::update () {
     math::Vec<6> tStrains = {alpha*T,alpha*T,alpha*T,0.,0.,0.};
     strains = strains-tStrains;
   }
+  //strains = strains - strains0;
   stress.zero();
   math::matBVprod(matC, strains, 1.0, stress);
 }
