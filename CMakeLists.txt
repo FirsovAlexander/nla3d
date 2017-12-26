@@ -101,6 +101,7 @@ include_directories (src/lib)
 add_subdirectory (src/lib)
 add_subdirectory (test EXCLUDE_FROM_ALL)
 
+
 # here is a main target - nla3d.exe
 set (NLA3D_APP_SOURCES "src/main.cpp;src/FEReaders.cpp")
 

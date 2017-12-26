@@ -9,7 +9,6 @@ namespace nla3d {
 
 class ElementTETRA1 : public ElementTETRA {
 public:
-
   ElementTETRA1 ();
 
   void pre();
@@ -19,7 +18,7 @@ public:
   void update();
 
   void makeB (math::Mat<3,4> &B);
-  
+
   void makeC (math::MatSym<3> &C);
 
   // conductivity coef ( W/(K m), for example)

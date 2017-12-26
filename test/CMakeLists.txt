@@ -127,7 +127,6 @@ add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME} ${CMAKE_SOURCE_DIR}/test/TETRA0/
 set_tests_properties(${TEST_NAME} PROPERTIES LABELS "FUNC")
 add_dependencies(check ${TEST_NAME})
 
-
 set (TEST_SOURCES "TETRA1_test.cpp;${PROJECT_SOURCE_DIR}/src/FEReaders.cpp")
 set (TEST_NAME "TETRA1_test")
 add_executable(${TEST_NAME} ${TEST_SOURCES})
@@ -136,7 +135,6 @@ add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME} ${CMAKE_SOURCE_DIR}/test/TETRA1/
     ${CMAKE_SOURCE_DIR}/test/TETRA1/term.res)
 set_tests_properties(${TEST_NAME} PROPERTIES LABELS "FUNC")
 add_dependencies(check ${TEST_NAME})
-
 
 # BENCH tests
 
