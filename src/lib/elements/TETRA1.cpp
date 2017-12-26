@@ -14,71 +14,60 @@ void ElementTETRA1::pre () {
   }
 }
 
-// here stiffness matrix is built
 void ElementTETRA1::buildK() {
-  Eigen::MatrixXd matS(4,4);
-  matS.setZero();
-  matS<< 1. , storage->getNode(getNodeNumber(0)).pos[0] , storage->getNode(getNodeNumber(0)).pos[1] , storage->getNode(getNodeNumber(0)).pos[2] ,
-          1. , storage->getNode(getNodeNumber(1)).pos[0] , storage->getNode(getNodeNumber(1)).pos[1] , storage->getNode(getNodeNumber(1)).pos[2] ,
-          1. , storage->getNode(getNodeNumber(2)).pos[0] , storage->getNode(getNodeNumber(2)).pos[1] , storage->getNode(getNodeNumber(2)).pos[2] ,
-          1. , storage->getNode(getNodeNumber(3)).pos[0] , storage->getNode(getNodeNumber(3)).pos[1] , storage->getNode(getNodeNumber(3)).pos[2];
+  math::Mat<4,4> matS(1. , storage->getNode(getNodeNumber(0)).pos[0] , storage->getNode(getNodeNumber(0)).pos[1] , storage->getNode(getNodeNumber(0)).pos[2] ,
+                      1. , storage->getNode(getNodeNumber(1)).pos[0] , storage->getNode(getNodeNumber(1)).pos[1] , storage->getNode(getNodeNumber(1)).pos[2] ,
+                      1. , storage->getNode(getNodeNumber(2)).pos[0] , storage->getNode(getNodeNumber(2)).pos[1] , storage->getNode(getNodeNumber(2)).pos[2] ,
+                      1. , storage->getNode(getNodeNumber(3)).pos[0] , storage->getNode(getNodeNumber(3)).pos[1] , storage->getNode(getNodeNumber(3)).pos[2]);
 
-  vol = matS.determinant()/6.;
-  // Ke will store element stiffness matrix in global coordinates
+  vol = matS.det()/6.;
+
   math::MatSym<4> matKe;
   matKe.zero();
 
-  // matB is strain matrix
   math::Mat<3,4> matB;
   matB.zero();
 
-  // matC is 3d elastic  matrix
   math::MatSym<3> matC;
   matC.zero();
 
-  // fill here matC
   makeC(matC);
-  // fill here matB
+
   makeB(matB);
 
   math::matBTDBprod(matB, matC, vol, matKe);
-  // start assemble procedure. Here we should provide element stiffness matrix and an order of 
-  // nodal DoFs in the matrix.
+
   assembleK(matKe, {Dof::TEMP});
 }
 
-// after solution it's handy to calculate stresses, strains and other stuff in elements.
 void ElementTETRA1::update () {
-  // matB is strain matrix
+
   math::Mat<3,4> matB;
   matB.zero();
 
-  // matC is 3d elastic  matrix
+
   math::MatSym<3> matC;
   matC.zero();
 
-  // fill here matC
+
   makeC(matC);
-  // fill here matB
+
   makeB(matB);
-  // get nodal solutions from storage
+
   math::Vec<4> U;
   for (uint16 i = 0; i < getNNodes(); i++) {
     U[i] = storage->getNodeDofSolution(getNodeNumber(i), Dof::TEMP);
   }
 
   flux.zero();
-  gradT.zero();
-  math::matBVprod(matB, U, 1., gradT);
-  // restore fluxes
-  flux = gradT*k;
+  math::matBVprod(matB, U, k, flux);
 }
 
 void ElementTETRA1::makeB(math::Mat<3,4> &B)
 {
     double *B_L = B.ptr();
     double b[4], c[4], d[4];
-    //Eigen::MatrixXd mb(3,3), mc(3,3), md(3,3);
+
     int x=0, y = 1, z=2;
 
     double x12 = storage->getNode(getNodeNumber(0)).pos[x] - storage->getNode(getNodeNumber(1)).pos[x];
@@ -152,15 +141,14 @@ void ElementTETRA1::makeB(math::Mat<3,4> &B)
 }
 
 void ElementTETRA1::makeC (math::MatSym<3> &C) {
-    C.comp(0,0) = (-1)*k;
-    C.comp(1,1) = (-1)*k;
-    C.comp(2,2) = (-1)*k;
+    C.comp(0,0) = -k;
+    C.comp(1,1) = -k;
+    C.comp(2,2) = -k;
 }
-
 
 bool ElementTETRA1::getScalar(double* scalar, scalarQuery query, uint16 gp, const double scale) {
   if (query == scalarQuery::VOL){
-     *scalar += vol;
+     *scalar += vol*scale;
     return true;
   }
   return false;
@@ -169,9 +157,10 @@ bool ElementTETRA1::getScalar(double* scalar, scalarQuery query, uint16 gp, cons
 bool  ElementTETRA1::getVector(math::Vec<3>* vector, vectorQuery query, uint16 gp, const double scale) {
   switch (query) {
     case vectorQuery::FLUX:
-      (*vector)[0] += flux[0];
-      (*vector)[1] += flux[1];
-      (*vector)[2] += flux[2];
+      (*vector) += flux*scale;
+      return true;
+    case vectorQuery::GRADT:
+      (*vector) += flux*(scale/k);
       return true;
   }  
   return false;
