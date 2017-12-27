@@ -42,6 +42,11 @@ public:
   // Poissons coef.
   double my = 0.0;
 
+  // coefficient of thermal expansion
+  double alpha = 0.0;
+  // temperature
+  double T = 0.0;
+
   // stresses in the element (calculated after the solving of the global equation system in
   // update() function.
   //stress[M_XX], stress[M_YY], stress[M_ZZ], stress[M_XY], stress[M_YZ], stress[M_XZ]
