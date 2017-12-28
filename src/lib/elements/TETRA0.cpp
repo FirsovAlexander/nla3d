@@ -42,27 +42,30 @@ void ElementTETRA0::buildK() {
   makeB(matB);  
 
   math::matBTDBprod(matB, matC, vol, matKe);
-  
-  //node forces calculations
-  math::Vec<12> Fe;
-  Fe.zero();
 
-  math::Mat<12,6> matBTC;
-  matBTC = matB.transpose()*matC.toMat();
-  
-  //termal initial strains
-  if (T > 0){
-    //temp node forces
-    math::Vec<6> tStrains = {alpha*T,alpha*T,alpha*T,0.,0.,0.};
-    math::matBVprod(matBTC, tStrains, -vol, Fe);
+  if ((alpha != 0. && T != 0.) || strains.qlength() != 0.){
+    //node forces calculations
+    math::Vec<12> Fe;
+    Fe.zero();
+
+    math::Mat<12,6> matBTC;
+    matBTC = matB.transpose()*matC.toMat();
+    
+    //termal initial strains
+    if (alpha != 0. && T != 0.){
+      //temp node forces
+      math::Vec<6> tStrains = {alpha*T,alpha*T,alpha*T,0.,0.,0.};
+      strains = strains + tStrains;
+    }
+
+    //mechanical initial strains
+    math::matBVprod(matBTC, strains, -vol, Fe);
+
+    assembleK(matKe, Fe, {Dof::UX, Dof::UY, Dof::UZ});
   }
-
-  //mechanical initial strains
-  math::matBVprod(matBTC, strains, -vol, Fe);
-
-  // start assemble procedure. Here we should provide element stiffness matrix and an order of 
-  // nodal DoFs in the matrix.
-  assembleK(matKe, Fe,{Dof::UX, Dof::UY, Dof::UZ});
+  else{
+    assembleK(matKe, {Dof::UX, Dof::UY, Dof::UZ});
+  }
 }
 
 // after solution it's handy to calculate stresses, strains and other stuff in elements.
@@ -88,17 +91,9 @@ void ElementTETRA0::update () {
   }
   
   //restore strains
-  math::Vec<6> strains0 = strains; //mechanical initial strains
   strains.zero();
   math::matBVprod(matB, U, -1.0, strains);
-  strains = strains - strains0;
   
-  //initial term strains
-  if (T > 0.){
-    math::Vec<6> tStrains = {alpha*T,alpha*T,alpha*T,0.,0.,0.};
-    strains = strains-tStrains;
-  }
-
   stress.zero();
   math::matBVprod(matC, strains, 1.0, stress);
 }
@@ -194,18 +189,21 @@ void ElementTETRA0::makeC (math::MatSym<6> &C) {
   C.comp(5,5) = (1./2.-my)*A;
 }
 
-int ElementTETRA0::permute(int i){
-  if (i > 3)
-    return i -4;
-  else 
-    return i;
-}
-
 bool ElementTETRA0::getScalar(double* scalar, scalarQuery query, uint16 gp, const double scale) {
   if (query == scalarQuery::VOL){
      *scalar += vol;
     return true;
   }
+  return false;
+}
+
+bool  ElementTETRA0::getVector(math::Vec<6>* vector, vectorQuery query, uint16 gp, const double scale) {
+  switch (query) {
+    case vectorQuery::TSTRAIN:
+      math::Vec<6> tStrains = {alpha*T,alpha*T,alpha*T,0.,0.,0.};
+      *vector += tStrains*scale;
+      return true;
+  }  
   return false;
 }
 

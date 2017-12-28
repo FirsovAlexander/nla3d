@@ -27,10 +27,11 @@ enum class vectorQuery {
   IC,
   FLUX,
   GRADT,
+  TSTRAIN,
   LAST
 };
 
-const char* const vectorQueryLabels[] = {"UNDEFINEDS", "IC", "FLUX", "GRADT", "LAST"};
+const char* const vectorQueryLabels[] = {"UNDEFINEDS", "IC", "FLUX", "GRADT", "TSTRAIN", "LAST"};
 
 static_assert((int)vectorQuery::LAST == sizeof(vectorQueryLabels)/sizeof(vectorQueryLabels[0]) - 1,
     "vectorQuery enumeration and vectorQueryLabels must have the same number of entries");
