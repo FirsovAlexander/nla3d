@@ -197,16 +197,6 @@ bool ElementTETRA0::getScalar(double* scalar, scalarQuery query, uint16 gp, cons
   return false;
 }
 
-bool  ElementTETRA0::getVector(math::Vec<6>* vector, vectorQuery query, uint16 gp, const double scale) {
-  switch (query) {
-    case vectorQuery::TSTRAIN:
-      math::Vec<6> tStrains = {alpha*T,alpha*T,alpha*T,0.,0.,0.};
-      *vector += tStrains*scale;
-      return true;
-  }  
-  return false;
-}
-
 bool  ElementTETRA0::getTensor(math::MatSym<3>* tensor, tensorQuery query, uint16 gp, const double scale) {
   if (query == tensorQuery::C){
       tensor->comp(0,0) += strains[0];
@@ -226,7 +216,15 @@ bool  ElementTETRA0::getTensor(math::MatSym<3>* tensor, tensorQuery query, uint1
     tensor->comp(0,2) += stress[5];
     return true;
   }
-
+  if (query == tensorQuery::TSTRAIN){
+    tensor->comp(0,0) += alpha*T;
+    tensor->comp(1,1) += alpha*T;
+    tensor->comp(2,2) += alpha*T;
+    tensor->comp(0,1) += 0.;
+    tensor->comp(1,2) += 0.;
+    tensor->comp(0,2) += 0.;
+    return true;
+  }
   
   return false;
 }
