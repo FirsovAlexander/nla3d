@@ -273,25 +273,22 @@ bool readNeuFile(std::string filename, MeshData& md)
       file >> md.nodesPos[node_num][col];
     }
     md.nodesNumbers.push_back(node_num+1);
-  }           
-  md.cellIntData.insert(std::make_pair("MAT", std::vector<uint32>()));
+  }
   
   // read volumes section 
   int volumesCount;
   file >> volumesCount; 
   md.cellNumbers.reserve(volumesCount);
-  for (int volume_num(0); volume_num < volumesCount; ++volume_num) {
+  vector<uint32> enodes(4, 0);
+  for (uint32 volume_num(0); volume_num < volumesCount; ++volume_num) {
     int mat_num;
     file >> mat_num;    
-    md.cellIntData["MAT"].push_back(mat_num);    
-    vector<uint32> enodes;
-    enodes.resize(4);
+    md.cellIntData["MAT"].push_back(mat_num);
+
     for (int node_num(0); node_num < 4; ++node_num) {    
       file >> enodes[node_num];
     }
-    for (int node_num(4); node_num < 8; ++node_num) {
-        enodes.push_back(enodes[3]);
-    }
+
     md.cellNodes.push_back(enodes);
     md.cellNumbers.push_back(volume_num + 1);
   }
@@ -300,19 +297,19 @@ bool readNeuFile(std::string filename, MeshData& md)
   int surfaceCount;
   file >> surfaceCount;  
   for (int surfNum(0); surfNum < surfaceCount; ++surfNum) {
-    int bc;
-    file >> bc;
-    string compname = std::to_string(bc);
-    if (md.feComps.find(compname) == md.feComps.end()) {
+    string compname;
+    file >> compname;
+    auto it = md.feComps.find(compname);
+    if (it == md.feComps.end()) {
       FEComponent comp;
       comp.name = compname;
       comp.type = FEComponent::ELEMENTS;
-      md.feComps.insert(std::make_pair(comp.name, comp));      
+      md.feComps.insert(std::make_pair(comp.name, comp));
     }    
     for (int node_num(0); node_num < 3; ++node_num) { 
       int node;
       file >> node;
-      md.feComps[compname].list.push_back(node);
+      it->second.list.push_back(node);
     }
   }
   file.close();
