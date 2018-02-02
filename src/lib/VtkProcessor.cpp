@@ -157,6 +157,8 @@ void VtkProcessor::write_geometry(std::ofstream &file, bool def) {
       file << "5" << std::endl; //VTK_TRIANGLE
     } else if (eltype == ElementShape::LINE) {
       file << "3" << std::endl; //VTK_LINE
+    } else if (eltype == ElementShape::VERTEX) {
+      file << "2" << std::endl; //VTK_POLY_VERTEX
     } else {
       LOG_N_TIMES(10, ERROR) << "Don't now what type of elements here it is (el_num = " << i << ")";
     }

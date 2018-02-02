@@ -59,7 +59,7 @@ static const uint16 _shape_dim[] = {
 
 // number of nodes in shape
 static const uint16 _shape_nnodes[] = {
-  1,  // VERTEX
+  2,  // VERTEX
   2,  // LINE
   3,  // TRIANGLE
   4,  // QUAD
@@ -160,6 +160,20 @@ class Element {
 
 
 //Element geometry class
+class ElementVERTEX : public Element {
+  public:
+    ElementVERTEX() {
+      shape = ElementShape::VERTEX;
+      nodes = new uint32[getNNodes()];
+    }
+
+    ElementVERTEX& operator= (const ElementVERTEX& from) {
+      Element::operator= (from);
+      return *this;
+    }
+};
+
+
 class ElementLINE : public Element {
   public:
     ElementLINE() {
