@@ -27,13 +27,8 @@ public:
 
   void update();
 
-  inline uint16 getNNodes() {
-    return 6;
-  }
-
-  inline uint16 getDim(){
-    return 3;
-  }
+  uint16 getNNodes();
+  uint16 getDim();
 
   uint16 nOfIntPoints();
 
@@ -51,6 +46,14 @@ public:
   //postproc procedures
   bool getVector(math::Vec<3>* vector, vectorQuery code, uint16 gp, const double scale);
 };
+
+inline uint16 ElementINTER3::getNNodes() {
+  return 6;
+}
+
+inline uint16 ElementINTER3::getDim(){
+  return 3;
+}
 
 
 // structures for convenient keeping of quadrature constants

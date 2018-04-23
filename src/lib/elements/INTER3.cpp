@@ -3,7 +3,7 @@
 namespace nla3d {
 
 ElementINTER3::ElementINTER3 () {
-  shape = ElementShape::TRIANGLE;
+  shape = ElementShape::WEDGE;
   nodes = new uint32[getNNodes()];
   type = ElementType::INTER3;
 }

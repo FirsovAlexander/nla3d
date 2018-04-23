@@ -4,6 +4,7 @@
 #include "FESolver.h"
 #include "elements/TETRA0.h"
 #include "elements/INTER0.h"
+#include "elements/INTER3.h"
 
 
 using namespace nla3d;
@@ -50,6 +51,7 @@ int main (int argc, char* argv[]) {
   el2->getNodeNumber(3) = 8;
   storage.addElement(el2);
 
+  /*
   ElementINTER0* inter1 = new ElementINTER0();
   inter1->k = 1e8;
   inter1->getNodeNumber(0) = 1;
@@ -67,6 +69,16 @@ int main (int argc, char* argv[]) {
   inter3->getNodeNumber(0) = 3;
   inter3->getNodeNumber(1) = 7;
   storage.addElement(inter3);
+  */
+  ElementINTER3* inter1 = new ElementINTER3();
+  inter1->k = 1e8;
+  inter1->getNodeNumber(0) = 1;
+  inter1->getNodeNumber(1) = 2;
+  inter1->getNodeNumber(2) = 3;
+  inter1->getNodeNumber(3) = 5;
+  inter1->getNodeNumber(4) = 6;
+  inter1->getNodeNumber(5) = 7;
+  storage.addElement(inter1);
 
   solver.addFix(4, Dof::UX);
   solver.addFix(4, Dof::UY);
