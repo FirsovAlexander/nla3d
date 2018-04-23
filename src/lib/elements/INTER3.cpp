@@ -88,16 +88,12 @@ math::Mat<3,18> ElementINTER3::make_B(uint16 np){
   B[2][17] = -intL3(np);
 
   //матрица поворота в глобальную декартову СК
-  math::Mat<3,3> T;
-  T.zero(); 
-  make_T(T);
-
-  B = T*B;
+  B = make_T()*B;
 
   return B;
 }
 
-void ElementINTER3::make_T(math::Mat<3,3>& T){
+math::Mat<3,3> ElementINTER3::make_T(){
   //Востанавливаем локальный базис s1,s2,n
   //s1 совпадает с одной из сторон
   math::Vec<3> s1 = storage->getNode(getNodeNumber(1)).pos - storage->getNode(getNodeNumber(0)).pos;
@@ -108,12 +104,10 @@ void ElementINTER3::make_T(math::Mat<3,3>& T){
   math::Vec<3> s2(n[1]*s1[2]-n[2]*s1[1],n[2]*s1[0]-n[0]*s1[2],n[0]*s1[1]-n[1]*s1[0]);
   
   //Матрица поворота от глоб к локальной ск
-  math::Mat<3,3> L( s1[0],s2[0],n[0],
+  math::Mat<3,3> T ( s1[0],s2[0],n[0],
                     s1[1],s2[1],n[1],
-                    s1[2],s2[2],n[2]); 
-  
-  double Ldet = L.det();
-  T = L.inv(det);
+                    s1[2],s2[2],n[2]);
+  return T;
 }
 
 bool  ElementINTER3::getVector(math::Vec<3>* vector, vectorQuery query, uint16 gp, const double scale) {

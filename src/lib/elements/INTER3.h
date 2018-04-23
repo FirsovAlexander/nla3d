@@ -21,7 +21,7 @@ public:
   void buildK();
   void make_D(math::MatSym<3>& D);
   math::Mat<3,18> make_B(uint16 np);
-  void make_T(math::Mat<3,3>& T);
+  math::Mat<3,3> make_T();
 
   void makeJacob();
 
