@@ -161,8 +161,7 @@ void VtkProcessor::write_geometry(std::ofstream &file, bool def) {
       file << "2" << std::endl; //VTK_POLY_VERTEX
     } else if (eltype == ElementShape::WEDGE) {
       file << "13" << std::endl; //VTK_WEDGE
-    }
-     else {
+    }  else {
       LOG_N_TIMES(10, ERROR) << "Don't now what type of elements here it is (el_num = " << i << ")";
     }
   }
