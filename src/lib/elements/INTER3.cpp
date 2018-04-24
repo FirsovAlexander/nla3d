@@ -32,6 +32,8 @@ void ElementINTER3::buildK() {
     matBTDBprod(matB, D, dWt, Ke);
   }// loop over integration points
 
+  LOG(INFO) << "Ke \n" << Ke.toMat();
+
   assembleK(Ke, {Dof::UX, Dof::UY, Dof::UZ});
 }
 
@@ -56,13 +58,17 @@ void ElementINTER3::makeJacob(){
   math::Mat<2,2> J(locX1[0]-locX3[0],locX1[1]-locX3[1],
                    locX2[0]-locX3[0],locX2[1]-locX3[1]);
   det = J.det(); //Якобиан перехода между L координатами и локальными декартовыми
+
+  LOG(INFO) << "det " << det;
 }
 
 void ElementINTER3::make_D(math::MatSym<3>& D){
-  D.comp(0,0) = k;
-  D.comp(1,1) = k;
-  D.comp(2,2) = k;
-}
+  D.comp(0,0) = ks;
+  D.comp(1,1) = ks;
+  D.comp(2,2) = kn;
+
+  //LOG(INFO) << "D\n" << D.toMat();
+} 
 
 math::Mat<3,18> ElementINTER3::make_B(uint16 np){
   math::Mat<3,18> B;
@@ -87,8 +93,10 @@ math::Mat<3,18> ElementINTER3::make_B(uint16 np){
   B[1][16] = -intL3(np);
   B[2][17] = -intL3(np);
 
+  LOG(INFO) << "B\n" << B;
+
   //матрица поворота в глобальную декартову СК
-  B = make_T()*B;
+  //B = make_T()*B;
 
   return B;
 }
@@ -98,6 +106,8 @@ math::Mat<3,3> ElementINTER3::make_T(){
   //s1 совпадает с одной из сторон
   math::Vec<3> s1 = storage->getNode(getNodeNumber(1)).pos - storage->getNode(getNodeNumber(0)).pos;
   math::Vec<3> t2 = storage->getNode(getNodeNumber(2)).pos - storage->getNode(getNodeNumber(0)).pos;
+  LOG(INFO) << "s1" << s1;
+  LOG(INFO) << "s2" << t2;
   //Востанавливаем нормаль как векторное произведение двух вектров в плоскости треугольника
   math::Vec<3> n(s1[1]*t2[2]-s1[2]*t2[1],s1[2]*t2[0]-s1[0]*t2[2],s1[0]*t2[1]-s1[1]*t2[0]);
   //Востанавливаем s2 как векторное произведение n x s1
@@ -107,6 +117,7 @@ math::Mat<3,3> ElementINTER3::make_T(){
   math::Mat<3,3> T ( s1[0],s2[0],n[0],
                     s1[1],s2[1],n[1],
                     s1[2],s2[2],n[2]);
+
   return T;
 }
 
