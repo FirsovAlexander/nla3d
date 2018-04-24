@@ -40,7 +40,7 @@ public:
   // strength
   double kn = 0.0, ks = 0.0;
 
-  uint16 i_int = 0; // index of integration scheme
+  uint16 i_int = 1; // index of integration scheme
   double det = 0.; // determinant of Jacob matrix
 
   //postproc procedures
