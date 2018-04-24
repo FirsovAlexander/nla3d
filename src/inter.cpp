@@ -14,16 +14,14 @@ int main (int argc, char* argv[]) {
   double nodeTable[numberOfNodes][3] = {
                           {0.0, 0.0, 0.0},
                           {1.,0., 0.},
-                          {0., -0.8660254037844387, 0.49999999999999994},
-                          {0., 0.49999999999999994, 0.8660254037844387},
+                          {0., -1., 0.},
+                          {0., 0., 1.},
 
                           {0.0, 0.0, 0.0},
                           {1.,0., 0.},
-                          {0., -0.8660254037844387, 0.49999999999999994},
-                          {0.,-0.49999999999999994, -0.8660254037844387}};
+                          {0., -1., 0.},
+                          {0., 0., -1.}};
   double kn = 1e10;
-  double ks = 1e20;
-  /*
 
   ElementTETRA0* el1 = new ElementTETRA0();
   el1->E = 1.e9;
@@ -42,25 +40,21 @@ int main (int argc, char* argv[]) {
   el2->getNodeNumber(3) = 8;
   
   ElementINTER0* inter1 = new ElementINTER0();
-  inter1->kn = kn;
-  inter1->ks = kn;
+  inter1->k = kn;
   inter1->getNodeNumber(0) = 1;
   inter1->getNodeNumber(1) = 5;
 
   ElementINTER0* inter2 = new ElementINTER0();
-  inter2->kn = kn;
-  inter2->ks = ks;
+  inter2->k = kn;
   inter2->getNodeNumber(0) = 2;
   inter2->getNodeNumber(1) = 6;
 
   ElementINTER0* inter3 = new ElementINTER0();
-  inter3->kn = kn;
-  inter3->ks = ks;
+  inter3->k = kn;
   inter3->getNodeNumber(0) = 3;
   inter3->getNodeNumber(1) = 7;
   
   /*1D interface solution */
-  /*
   FEStorage storage;
   // Create and add nodes into FEStorage
   for (uint32 i = 1; i <= numberOfNodes; i++) {
@@ -122,7 +116,7 @@ int main (int argc, char* argv[]) {
 
   ElementINTER3* inter4 = new ElementINTER3();
   inter4->kn = kn;
-  inter4->ks = ks;
+  inter4->ks = 1.e50;
   inter4->getNodeNumber(0) = 1;
   inter4->getNodeNumber(1) = 2;
   inter4->getNodeNumber(2) = 3;
@@ -140,8 +134,8 @@ int main (int argc, char* argv[]) {
   solver2.addFix(8, Dof::UZ);
 
   solver2.addFix(4, Dof::UX);
-  solver2.addFix(4, Dof::UY, 0.001*0.49999999999999994);
-  solver2.addFix(4, Dof::UZ, 0.001*0.8660254037844387);
+  solver2.addFix(4, Dof::UY);
+  solver2.addFix(4, Dof::UZ, 0.001);
   
   solver2.attachFEStorage(&storage2);
 

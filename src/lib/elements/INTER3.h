@@ -40,7 +40,7 @@ public:
   // strength
   double kn = 0.0, ks = 0.0;
 
-  uint16 i_int = 1; // index of integration scheme
+  uint16 i_int = 2; // index of integration scheme
   double det = 0.; // determinant of Jacob matrix
 
   //postproc procedures
@@ -77,10 +77,19 @@ static const TrianglePt _triangle_o2[] = {
   {0.,        1./2.,  1./2.,  1./6.}
 };
 
+// 3d order
+static const TrianglePt _triangle_o3[] = {
+  {1./3.,     1./3.,     1./3.,   -27./96.},
+  {11./15.,   2./15.,    2./15.,   25./96.},
+  {2./15.,    2./15.,    11./15.,  25./96.},
+  {2./15.,    11./15.,   2./15.,   25./96.}
+};
+
 // array of number of quadrature points in integration scheme
 static const uint16 _np_triangle[] = {
   sizeof(_triangle_o1) / sizeof(TrianglePt),
-  sizeof(_triangle_o2) / sizeof(TrianglePt)
+  sizeof(_triangle_o2) / sizeof(TrianglePt),
+  sizeof(_triangle_o3) / sizeof(TrianglePt)
 };
 
 inline uint16 ElementINTER3::nOfIntPoints(){
@@ -89,7 +98,8 @@ inline uint16 ElementINTER3::nOfIntPoints(){
 
 static const TrianglePt* _table_triangle[] = {
   _triangle_o1,
-  _triangle_o2
+  _triangle_o2,
+  _triangle_o3
 };
 
 inline double ElementINTER3::intWeight(uint16 np){
