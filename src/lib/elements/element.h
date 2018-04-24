@@ -242,6 +242,20 @@ class ElementHEXAHEDRON : public Element {
     }
 };
 
+
+class ElementWEDGE : public Element {
+  public:
+    ElementWEDGE() {
+      shape = ElementShape::WEDGE;
+      nodes = new uint32[getNNodes()];
+    }
+
+    ElementWEDGE& operator= (const ElementWEDGE& from) {
+      Element::operator= (from);
+      return *this;
+    }
+};
+
 } // namespace nla3d
 
 // 'dirty' hack to avoid include loops (element-vs-festorage)

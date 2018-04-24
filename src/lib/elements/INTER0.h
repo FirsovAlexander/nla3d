@@ -20,6 +20,10 @@ public:
   // strength
   double k = 0.0;
 
+  math::Vec<3> x; //local axis of spring
+
+  math::Vec<3> deltaPos; //local axis of spring
+
   //postproc procedures
   bool getVector(math::Vec<3>* vector, vectorQuery code, uint16 gp, const double scale);
 };
