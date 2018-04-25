@@ -18,9 +18,9 @@ public:
   void update();
 
   // strength
-  double k = 0.0;
+  double kn = 0.0, ks = 0.0;
 
-  math::Vec<3> x; //local axis of spring
+  math::Vec<3> n; //local axis of spring
 
   math::Vec<3> deltaPos; //local axis of spring
 

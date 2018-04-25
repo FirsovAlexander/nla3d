@@ -22,6 +22,9 @@ int main (int argc, char* argv[]) {
                           {0., -1., 0.},
                           {0., 0., -1.}};
   double kn = 1e10;
+  double ks = 1e10;
+
+  math::Vec<3> loc = {0.,0.,1.};
 
   ElementTETRA0* el1 = new ElementTETRA0();
   el1->E = 1.e9;
@@ -40,17 +43,23 @@ int main (int argc, char* argv[]) {
   el2->getNodeNumber(3) = 8;
   
   ElementINTER0* inter1 = new ElementINTER0();
-  inter1->k = kn;
+  inter1->kn = kn;
+  inter1->ks = ks;
+  inter1->n = loc;
   inter1->getNodeNumber(0) = 1;
   inter1->getNodeNumber(1) = 5;
 
   ElementINTER0* inter2 = new ElementINTER0();
-  inter2->k = kn;
+  inter2->kn = kn;
+  inter2->ks = kn;
+  inter2->n = loc;
   inter2->getNodeNumber(0) = 2;
   inter2->getNodeNumber(1) = 6;
 
   ElementINTER0* inter3 = new ElementINTER0();
-  inter3->k = kn;
+  inter3->kn = kn;
+  inter3->ks = kn;
+  inter3->n = loc;
   inter3->getNodeNumber(0) = 3;
   inter3->getNodeNumber(1) = 7;
   
@@ -84,6 +93,9 @@ int main (int argc, char* argv[]) {
   VtkProcessor* vtk = new VtkProcessor(&storage, "inter");
   vtk->writeAllResults();
   solver.addPostProcessor(vtk);
+
+  math::PARDISO_equationSolver eqSolver = math::PARDISO_equationSolver();
+  solver.attachEquationSolver(&eqSolver);
   solver.solve();
 
   /*2D interface solution*/
@@ -116,7 +128,7 @@ int main (int argc, char* argv[]) {
 
   ElementINTER3* inter4 = new ElementINTER3();
   inter4->kn = kn;
-  inter4->ks = 1.e50;
+  inter4->ks = ks;
   inter4->getNodeNumber(0) = 1;
   inter4->getNodeNumber(1) = 2;
   inter4->getNodeNumber(2) = 3;
@@ -142,6 +154,9 @@ int main (int argc, char* argv[]) {
   VtkProcessor* vtk2 = new VtkProcessor(&storage2, "inter2");
   vtk2->writeAllResults();
   solver2.addPostProcessor(vtk2);
+
+  math::PARDISO_equationSolver eqSolver2 = math::PARDISO_equationSolver();
+  solver2.attachEquationSolver(&eqSolver2);  
   solver2.solve();
   
 }

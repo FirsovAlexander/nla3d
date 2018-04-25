@@ -17,42 +17,35 @@ void ElementINTER0::buildK() {
 
   Eigen::MatrixXd K(3,3);
 
-  Eigen::MatrixXd T(3,6);
+  Eigen::MatrixXd T(3,3);
   
   Ke.setZero();
   K.setZero();
-  T.setZero();
-  
-  T(0,0) = x[0]/x.length();
-  T(1,1) = x[1]/x.length();
-  T(2,2) = x[2]/x.length();
-  T(0,3) = T(0,0);
-  T(1,4) = T(1,1);
-  T(2,5) = T(2,2);
-  
-  /*
-  T(0,0) = x[0]/x.length();
-  T(0,1) = x[1]/x.length();
-  T(0,2) = x[2]/x.length();
-  T(1,3) = T(0,0);
-  T(1,4) = T(0,1);
-  T(1,5) = T(0,2); 
-  
-  K << 1.0, -1.0,
-      -1.0,  1.0;
-  K *= k;
-  Ke.triangularView<Eigen::Upper>() = T.transpose() * K * T;
-  */
-  
-  
-  K << x[0]/x.length()*k , 0., 0.,
-       0., x[1]/x.length()*k , 0.,
-       0., 0., x[2]/x.length()*k ;
 
-  Ke <<  K , -K,
-        -K,   K;
+  math::Vec<3> s1(1.,0.,-n[1]/n[2]);
+  math::Vec<3> s2(n[1]*s1[2]-n[2]*s1[1],n[2]*s1[0]-n[0]*s1[2],n[0]*s1[1]-n[1]*s1[0]);
+  
+  T << s1[0], s2[0], n[0],
+       s1[1], s2[1], n[1],
+       s1[2], s2[2], n[2];
 
-  Ke.triangularView<Eigen::Upper>() = Ke;
+  LOG(INFO) << "s2 " << s2;
+
+  Eigen::MatrixXd invT(3,3);
+  invT = T.inverse();
+
+  K << ks , 0, 0,
+       0,  ks, 0,
+       0,  0, kn;
+
+  K = invT.transpose()*K*invT;
+
+  Ke << K ,  -K,
+       -K,    K;
+
+  //Ke = T.transpose() * K * T;
+
+  LOG(INFO) << "Ke\n" << Ke;
 
   assembleK(Ke, {Dof::UX, Dof::UY, Dof::UZ});
 }
