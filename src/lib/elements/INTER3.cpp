@@ -32,8 +32,6 @@ void ElementINTER3::buildK() {
     matBTDBprod(matB, D, dWt, Ke);
   }// loop over integration points
 
-  LOG(INFO) << "INTER3\n" << Ke.toMat();
-
   assembleK(Ke, {Dof::UX, Dof::UY, Dof::UZ});
 }
 
@@ -103,7 +101,7 @@ math::Mat<3,3> ElementINTER3::make_T(){
   math::Vec<3> n(s1[1]*t2[2]-s1[2]*t2[1],s1[2]*t2[0]-s1[0]*t2[2],s1[0]*t2[1]-s1[1]*t2[0]);
   //Востанавливаем s2 как векторное произведение n x s1
   math::Vec<3> s2(n[1]*s1[2]-n[2]*s1[1],n[2]*s1[0]-n[0]*s1[2],n[0]*s1[1]-n[1]*s1[0]);
-  
+
   //Матрица поворота от глоб к локальной ск
   math::Mat<3,3> T (s1[0],s2[0],n[0],
                     s1[1],s2[1],n[1],

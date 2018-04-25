@@ -22,14 +22,20 @@ void ElementINTER0::buildK() {
   Ke.setZero();
   K.setZero();
 
-  math::Vec<3> s1(1.,0.,-n[1]/n[2]);
+  //Произвольный линенйно независмый базис
+  math::Vec<3> s1(n[0],n[1]+1.,n[2]+1.);
+  //ортогонализаця базиса
+  math::Vec<3> proj_s1_n = n*((s1[0]*n[0]+s1[1]*n[1]+s1[2]*n[2])/n.qlength());
+  s1 = s1 - proj_s1_n;
   math::Vec<3> s2(n[1]*s1[2]-n[2]*s1[1],n[2]*s1[0]-n[0]*s1[2],n[0]*s1[1]-n[1]*s1[0]);
   
+  n = n*(1./n.length());
+  s1 = s1*(1./s1.length());
+  s2 = s2*(1./s2.length());
+
   T << s1[0], s2[0], n[0],
        s1[1], s2[1], n[1],
        s1[2], s2[2], n[2];
-
-  LOG(INFO) << "s2 " << s2;
 
   Eigen::MatrixXd invT(3,3);
   invT = T.inverse();
@@ -42,10 +48,6 @@ void ElementINTER0::buildK() {
 
   Ke << K ,  -K,
        -K,    K;
-
-  //Ke = T.transpose() * K * T;
-
-  LOG(INFO) << "Ke\n" << Ke;
 
   assembleK(Ke, {Dof::UX, Dof::UY, Dof::UZ});
 }
