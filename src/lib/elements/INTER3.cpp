@@ -31,6 +31,7 @@ void ElementINTER3::buildK() {
     math::Mat<3,18> matB = make_B(np);
     matBTDBprod(matB, D, dWt, Ke);
   }// loop over integration points
+  LOG(INFO) << Ke.toMat();
   assembleK(Ke, {Dof::UX, Dof::UY, Dof::UZ});
 }
 

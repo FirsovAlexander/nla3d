@@ -49,6 +49,8 @@ void ElementINTER0::buildK() {
   Ke << K ,  -K,
        -K,    K;
 
+  LOG(INFO) << Ke;
+
   assembleK(Ke, {Dof::UX, Dof::UY, Dof::UZ});
 }
 

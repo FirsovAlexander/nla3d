@@ -40,7 +40,7 @@ public:
   // strength
   double kn = 0.0, ks = 0.0;
 
-  uint16 i_int = 2; // index of integration scheme
+  uint16 i_int = 4; // index of integration scheme
   double det = 0.; // determinant of Jacob matrix
 
   //postproc procedures
@@ -67,29 +67,53 @@ struct TrianglePt {
 // gauss quadrature for 3D trinangle from (0) to (1) in L-coordinates
 // 1st order
 static const TrianglePt _triangle_o1[] = {
-  {1./3., 1./3., 1./3., 1./2.}
+  {1./3., 1./3., 1./3., 1.}
 };
 
 // 2nd order
 static const TrianglePt _triangle_o2[] = {
-  {1./2.,     0.,     1./2.,  1./6.},
-  {1./2.,     1./2.,  0.,     1./6.},
-  {0.,        1./2.,  1./2.,  1./6.}
+  {1./2.,     0.,     1./2.,  1./3.},
+  {1./2.,     1./2.,  0.,     1./3.},
+  {0.,        1./2.,  1./2.,  1./3.}
 };
 
 // 3d order
 static const TrianglePt _triangle_o3[] = {
-  {1./3.,     1./3.,     1./3.,   -27./96.},
-  {11./15.,   2./15.,    2./15.,   25./96.},
-  {2./15.,    2./15.,    11./15.,  25./96.},
-  {2./15.,    11./15.,   2./15.,   25./96.}
+  {1./3.,     1./3.,     1./3.,   -27./48.},
+  {11./15.,   2./15.,    2./15.,   25./48.},
+  {2./15.,    2./15.,    11./15.,  25./48.},
+  {2./15.,    11./15.,   2./15.,   25./48.}
+};
+
+// 4 order
+static const TrianglePt _triangle_o4[] = {
+  {1./3.,     1./3.,     1./3.,    27./60.},
+  {1./2.,     1./2.,     0.,       8./60.},
+  {0.,        1./2.,     1./2.,    8./60.},
+  {1./2.,     0.,        1./2.,    8./60.},
+  {1.,        0.,        0.,       3./60.},
+  {0.,        1.,        0.,       3./60.},
+  {0.,        0.,        1.,       3./60.}
+};
+
+// 5 order
+static const TrianglePt _triangle_o5[] = {
+  {1./3.,     1./3.,     1./3.,    0.225 },
+  {0.05971587,     0.47014206,     0.47014206, 0.13239415},
+  {0.47014206,     0.05971587,     0.47014206, 0.13239415},
+  {0.47014206,     0.47014206,     0.05971587, 0.13239415},
+  {0.79742699,     0.10128651,     0.10128651, 0.12593918},
+  {0.10128651,     0.79742699,     0.10128651, 0.12593918},
+  {0.10128651,     0.10128651,     0.79742699, 0.12593918}
 };
 
 // array of number of quadrature points in integration scheme
 static const uint16 _np_triangle[] = {
   sizeof(_triangle_o1) / sizeof(TrianglePt),
   sizeof(_triangle_o2) / sizeof(TrianglePt),
-  sizeof(_triangle_o3) / sizeof(TrianglePt)
+  sizeof(_triangle_o3) / sizeof(TrianglePt),
+  sizeof(_triangle_o4) / sizeof(TrianglePt),
+  sizeof(_triangle_o5) / sizeof(TrianglePt)
 };
 
 inline uint16 ElementINTER3::nOfIntPoints(){
@@ -99,7 +123,9 @@ inline uint16 ElementINTER3::nOfIntPoints(){
 static const TrianglePt* _table_triangle[] = {
   _triangle_o1,
   _triangle_o2,
-  _triangle_o3
+  _triangle_o3,
+  _triangle_o4,
+  _triangle_o5
 };
 
 inline double ElementINTER3::intWeight(uint16 np){

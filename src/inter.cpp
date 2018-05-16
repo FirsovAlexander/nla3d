@@ -21,8 +21,8 @@ int main (int argc, char* argv[]) {
                           {1.,0., 0.},
                           {0., -1., 0.},
                           {0., 0., -1.}};
-  double kn = 1e10;
-  double ks = 1e10;
+  double kn = 1e8;
+  double ks = 1e8;
 
   math::Vec<3> loc = {0.,0.,1.};
 
@@ -49,6 +49,20 @@ int main (int argc, char* argv[]) {
   inter1->getNodeNumber(0) = 1;
   inter1->getNodeNumber(1) = 5;
 
+  ElementINTER0* inter11 = new ElementINTER0();
+  inter11->kn = kn;
+  inter11->ks = ks;
+  inter11->n = loc;
+  inter11->getNodeNumber(0) = 1;
+  inter11->getNodeNumber(1) = 6;
+
+  ElementINTER0* inter12 = new ElementINTER0();
+  inter12->kn = kn;
+  inter12->ks = ks;
+  inter12->n = loc;
+  inter12->getNodeNumber(0) = 1;
+  inter12->getNodeNumber(1) = 7;
+
   ElementINTER0* inter2 = new ElementINTER0();
   inter2->kn = kn;
   inter2->ks = kn;
@@ -56,12 +70,42 @@ int main (int argc, char* argv[]) {
   inter2->getNodeNumber(0) = 2;
   inter2->getNodeNumber(1) = 6;
 
+  ElementINTER0* inter21 = new ElementINTER0();
+  inter21->kn = kn;
+  inter21->ks = kn;
+  inter21->n = loc;
+  inter21->getNodeNumber(0) = 2;
+  inter21->getNodeNumber(1) = 5;
+
+  ElementINTER0* inter22 = new ElementINTER0();
+  inter22->kn = kn;
+  inter22->ks = kn;
+  inter22->n = loc;
+  inter22->getNodeNumber(0) = 2;
+  inter22->getNodeNumber(1) = 7;
+
   ElementINTER0* inter3 = new ElementINTER0();
   inter3->kn = kn;
   inter3->ks = kn;
   inter3->n = loc;
   inter3->getNodeNumber(0) = 3;
   inter3->getNodeNumber(1) = 7;
+
+  ElementINTER0* inter31 = new ElementINTER0();
+  inter31->kn = kn;
+  inter31->ks = kn;
+  inter31->n = loc;
+  inter31->getNodeNumber(0) = 3;
+  inter31->getNodeNumber(1) = 5;
+
+  ElementINTER0* inter32 = new ElementINTER0();
+  inter32->kn = kn;
+  inter32->ks = kn;
+  inter32->n = loc;
+  inter32->getNodeNumber(0) = 3;
+  inter32->getNodeNumber(1) = 6;
+  
+  
   
   /*1D interface solution */
   FEStorage storage;
@@ -78,6 +122,12 @@ int main (int argc, char* argv[]) {
   storage.addElement(inter1);
   storage.addElement(inter2);
   storage.addElement(inter3);
+  storage.addElement(inter11);
+  storage.addElement(inter12);
+  storage.addElement(inter21);
+  storage.addElement(inter22);
+  storage.addElement(inter31);
+  storage.addElement(inter32);
   
   LinearFESolver solver;
   solver.addFix(8, Dof::UX);
