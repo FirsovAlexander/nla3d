@@ -31,13 +31,126 @@ void ElementINTER3::buildK() {
     math::Mat<3,18> matB = make_B(np);
     matBTDBprod(matB, D, dWt, Ke);
   }// loop over integration points
-  LOG(INFO) << Ke.toMat();
-  assembleK(Ke, {Dof::UX, Dof::UY, Dof::UZ});
+
+  //матрица поворота в глобальную декартову СК
+  math::Mat<3,3>  Tn = make_T();
+
+  LOG(DEBUG) << Tn;
+
+  math::Mat<18,18> T;
+  T.zero();
+
+  T[0][0] = Tn[0][0];
+  T[0][1] = Tn[0][1];
+  T[0][2] = Tn[0][2];
+
+  T[1][0] = Tn[1][0];
+  T[1][1] = Tn[1][1];
+  T[1][2] = Tn[1][2];
+
+  T[2][0] = Tn[2][0];
+  T[2][1] = Tn[2][1];
+  T[2][2] = Tn[2][2];
+  //
+  T[3][3] = Tn[0][0];
+  T[3][4] = Tn[0][1];
+  T[3][5] = Tn[0][2];
+
+  T[4][3] = Tn[1][0];
+  T[4][4] = Tn[1][1];
+  T[4][5] = Tn[1][2];
+
+  T[5][3] = Tn[2][0];
+  T[5][4] = Tn[2][1];
+  T[5][5] = Tn[2][2];
+  //
+  T[6][6] = Tn[0][0];
+  T[6][7] = Tn[0][1];
+  T[6][8] = Tn[0][2];
+
+  T[7][6] = Tn[1][0];
+  T[7][7] = Tn[1][1];
+  T[7][8] = Tn[1][2];
+
+  T[8][6] = Tn[2][0];
+  T[8][7] = Tn[2][1];
+  T[8][8] = Tn[2][2];
+  //
+  T[9][9] = Tn[0][0];
+  T[9][10] = Tn[0][1];
+  T[9][11] = Tn[0][2];
+
+  T[10][9] = Tn[1][0];
+  T[10][10] = Tn[1][1];
+  T[10][11] = Tn[1][2];
+
+  T[11][9] = Tn[2][0];
+  T[11][10] = Tn[2][1];
+  T[11][11] = Tn[2][2];
+    //
+  T[12][12] = Tn[0][0];
+  T[12][13] = Tn[0][1];
+  T[12][14] = Tn[0][2];
+
+  T[12][12] = Tn[1][0];
+  T[12][13] = Tn[1][1];
+  T[12][14] = Tn[1][2];
+
+  T[13][12] = Tn[2][0];
+  T[13][13] = Tn[2][1];
+  T[13][14] = Tn[2][2];
+    //
+  T[15][15] = Tn[0][0];
+  T[15][16] = Tn[0][1];
+  T[15][17] = Tn[0][2];
+
+  T[16][15] = Tn[1][0];
+  T[16][16] = Tn[1][1];
+  T[16][17] = Tn[1][2];
+
+  T[17][15] = Tn[2][0];
+  T[17][16] = Tn[2][1];
+  T[17][17] = Tn[2][2];
+
+ 
+
+  math::MatSym<18> KeT; 
+
+  matBTDBprod(T, Ke, 1., KeT);
+
+  LOG(DEBUG) << "Ke = " << Ke.toMat(); 
+
+  assembleK(KeT, {Dof::UX, Dof::UY, Dof::UZ});
 }
 
 void ElementINTER3::update () {
+  // build B
+  double dWt; //Gaussian quadrature weight
+  math::Mat<3,18> matB;
+  for (uint16 np=0; np < nOfIntPoints(); np++) {
+    dWt = intWeight(np);
+    matB += make_B(np)*dWt;
+  }
 
+  //матрица поворота в глобальную декартову СК
+  //matB = make_T()*matB;
 
+  math::Vec<18> U;
+  for (uint16 i = 0; i < getNNodes(); i++) {
+    U[i*3 + 0] = storage->getNodeDofSolution(getNodeNumber(i), Dof::UX);
+    U[i*3 + 1] = storage->getNodeDofSolution(getNodeNumber(i), Dof::UY);
+    U[i*3 + 2] = storage->getNodeDofSolution(getNodeNumber(i), Dof::UZ);
+  }
+
+  LOG(DEBUG) << "matB = " << matB;
+  strains = matB*U;
+
+  LOG(DEBUG) << "strains = " << strains;
+  
+  math::MatSym<3> D;
+  D.zero();
+  make_D(D);
+  stress = D.toMat()*strains;
 }
 
 void ElementINTER3::makeJacob(){
@@ -59,6 +172,8 @@ void ElementINTER3::makeJacob(){
   math::Mat<2,2> invJ = J.inv(J.det());
 
   det = abs(invJ.det()); //Якобиан перехода между L координатами и локальными декартовыми
+
+  LOG(INFO) << "det = " << det;
 }
 
 void ElementINTER3::make_D(math::MatSym<3>& D){
@@ -89,8 +204,8 @@ math::Mat<3,18> ElementINTER3::make_B(uint16 np){
   B[0][15] = -intL3(np);
   B[1][16] = -intL3(np);
   B[2][17] = -intL3(np);
-  //матрица поворота в глобальную декартову СК
-  B = make_T()*B;
+
+  //B = B*make_T();
 
   return B;
 }
@@ -114,11 +229,33 @@ math::Mat<3,3> ElementINTER3::make_T(){
                     s1[2],s2[2],n[2]);
   math::Mat<3,3> invT = T.inv(T.det());
 
-  return invT;
+  return T;
 }
 
 bool  ElementINTER3::getVector(math::Vec<3>* vector, vectorQuery query, uint16 gp, const double scale) {
   return false;
 }
+
+bool ElementINTER3::getTensor(math::MatSym<3>* tensor, tensorQuery query, uint16 gp, const double scale){
+  if (query == tensorQuery::C){
+      tensor->comp(0,0) += strains[0];
+      tensor->comp(1,1) += strains[1];
+      tensor->comp(2,2) += strains[2];
+      tensor->comp(0,1) += 0.;
+      tensor->comp(1,2) += 0.;
+      tensor->comp(0,2) += 0.;
+      return true;
+  }
+  if (query == tensorQuery::E){
+    tensor->comp(0,0) += stress[0];
+    tensor->comp(1,1) += stress[1];
+    tensor->comp(2,2) += stress[2];
+    tensor->comp(0,1) += 0.;
+    tensor->comp(1,2) += 0.;
+    tensor->comp(0,2) += 0.;
+    return true;
+  }
+}
+
 
 } //namespace nla3d

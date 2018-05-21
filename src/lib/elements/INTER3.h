@@ -40,11 +40,15 @@ public:
   // strength
   double kn = 0.0, ks = 0.0;
 
+  math::Vec<3> strains;
+  math::Vec<3> stress;
+
   uint16 i_int = 4; // index of integration scheme
   double det = 0.; // determinant of Jacob matrix
 
   //postproc procedures
-  bool getVector(math::Vec<3>* vector, vectorQuery code, uint16 gp, const double scale);
+  bool getVector(math::Vec<3>* vector, vectorQuery query, uint16 gp, const double scale);
+  bool getTensor(math::MatSym<3>* tensor, tensorQuery query, uint16 gp, const double scale);
 };
 
 inline uint16 ElementINTER3::getNNodes() {
