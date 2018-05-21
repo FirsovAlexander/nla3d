@@ -10,20 +10,20 @@
 using namespace nla3d;
 
 int main (int argc, char* argv[]) {
-  const uint32 numberOfNodes = 8;
+  const uint32 numberOfNodes = 6;
   double nodeTable[numberOfNodes][3] = {
                           {0.0, 0.0, 0.0},
                           {1.,0., 0.},
                           {0., -1., 0.},
-                          {0., 0., 1.},
+                          /*{0., 0., 1.},*/
 
                           {0.0, 0.0, 0.0},
                           {1.,0., 0.},
                           {0., -1., 0.},
-                          {0., 0., -1.}};
+                          /*{0., 0., -1.}*/};
   double kn = 1e8;
   double ks = 1e8;
-
+  /*
   math::Vec<3> loc = {0.,0.,1.};
 
   ElementTETRA0* el1 = new ElementTETRA0();
@@ -107,7 +107,7 @@ int main (int argc, char* argv[]) {
   
   
   
-  /*1D interface solution */
+  //1D interface solution 
   FEStorage storage;
   // Create and add nodes into FEStorage
   for (uint32 i = 1; i <= numberOfNodes; i++) {
@@ -182,23 +182,31 @@ int main (int argc, char* argv[]) {
   inter4->getNodeNumber(0) = 1;
   inter4->getNodeNumber(1) = 2;
   inter4->getNodeNumber(2) = 3;
-  inter4->getNodeNumber(3) = 5;
-  inter4->getNodeNumber(4) = 6;
-  inter4->getNodeNumber(5) = 7;
+  inter4->getNodeNumber(3) = 4;
+  inter4->getNodeNumber(4) = 5;
+  inter4->getNodeNumber(5) = 6;
 
-  storage2.addElement(el3);
-  storage2.addElement(el4);
+  //storage2.addElement(el3);
+  //storage2.addElement(el4);
   storage2.addElement(inter4);
   
   LinearFESolver solver2;
-  solver2.addFix(8, Dof::UX);
-  solver2.addFix(8, Dof::UY);
-  solver2.addFix(8, Dof::UZ);
+  solver2.addFix(1, Dof::UX);
+  solver2.addFix(1, Dof::UY);
+  solver2.addFix(1, Dof::UZ);
 
-  solver2.addFix(4, Dof::UX);
-  solver2.addFix(4, Dof::UY);
+  solver2.addFix(2, Dof::UX);
+  solver2.addFix(2, Dof::UY);
+  solver2.addFix(2, Dof::UZ);
+
+  solver2.addFix(3, Dof::UX);
+  solver2.addFix(3, Dof::UY);
+  solver2.addFix(3, Dof::UZ);
+
   solver2.addFix(4, Dof::UZ, 0.001);
-  
+  solver2.addFix(5, Dof::UZ, 0.001);
+  solver2.addFix(6, Dof::UZ, 0.001);
+
   solver2.attachFEStorage(&storage2);
 
   VtkProcessor* vtk2 = new VtkProcessor(&storage2, "inter2");

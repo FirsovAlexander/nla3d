@@ -112,40 +112,34 @@ void ElementINTER3::buildK() {
   T[17][16] = Tn[2][1];
   T[17][17] = Tn[2][2];
 
- 
+  
 
   math::MatSym<18> KeT; 
+  KeT.zero();
 
-  matBTDBprod(T, Ke, 1., KeT);
+  //matBTDBprod(T, Ke, 1., KeT);
 
   LOG(DEBUG) << "Ke = " << Ke.toMat(); 
 
-  assembleK(KeT, {Dof::UX, Dof::UY, Dof::UZ});
+  assembleK(Ke, {Dof::UX, Dof::UY, Dof::UZ});
 }
 
 void ElementINTER3::update () {
-  // build B
-  double dWt; //Gaussian quadrature weight
-  math::Mat<3,18> matB;
-  for (uint16 np=0; np < nOfIntPoints(); np++) {
-    dWt = intWeight(np);
-    matB += make_B(np)*dWt;
-  }
-
-  //матрица поворота в глобальную декартову СК
-  //matB = make_T()*matB;
-
   math::Vec<18> U;
+  U.zero();
   for (uint16 i = 0; i < getNNodes(); i++) {
     U[i*3 + 0] = storage->getNodeDofSolution(getNodeNumber(i), Dof::UX);
     U[i*3 + 1] = storage->getNodeDofSolution(getNodeNumber(i), Dof::UY);
     U[i*3 + 2] = storage->getNodeDofSolution(getNodeNumber(i), Dof::UZ);
   }
 
-  LOG(DEBUG) << "matB = " << matB;
-  strains = matB*U;
-
-  LOG(DEBUG) << "strains = " << strains;
+  strains.zero();
+  for (uint16 np=0; np < nOfIntPoints(); np++) {
+    double dWt = intWeight(np);
+    math::Mat<3,18> matB = make_B(np);
+    matB = make_T()*matB;
+    matBVprod(matB, U, dWt, strains);
+  }
   
   math::MatSym<3> D;
   D.zero();
@@ -205,7 +199,7 @@ math::Mat<3,18> ElementINTER3::make_B(uint16 np){
   B[1][16] = -intL3(np);
   B[2][17] = -intL3(np);
 
-  //B = B*make_T();
+  B = make_T()*B;
 
   return B;
 }
