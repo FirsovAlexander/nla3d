@@ -14,12 +14,12 @@ int main (int argc, char* argv[]) {
   double nodeTable[numberOfNodes][3] = {
                           {0.0, 0.0, 0.0},
                           {1.,0., 0.},
-                          {0., -1., 0.},
+                          {0., -0.8660254037844386, 0.5},
                           /*{0., 0., 1.},*/
 
                           {0.0, 0.0, 0.0},
                           {1.,0., 0.},
-                          {0., -1., 0.},
+                          {0., -0.8660254037844386, 0.5}
                           /*{0., 0., -1.}*/};
   double kn = 1e8;
   double ks = 1e8;
@@ -203,9 +203,12 @@ int main (int argc, char* argv[]) {
   solver2.addFix(3, Dof::UY);
   solver2.addFix(3, Dof::UZ);
 
-  solver2.addFix(4, Dof::UZ, 0.001);
-  solver2.addFix(5, Dof::UZ, 0.001);
-  solver2.addFix(6, Dof::UZ, 0.001);
+  solver2.addFix(4, Dof::UZ, 0.001*0.8660254037844386);
+  solver2.addFix(4, Dof::UY, 0.001*0.5);
+  solver2.addFix(5, Dof::UZ, 0.001*0.8660254037844386);
+  solver2.addFix(5, Dof::UY, 0.001*0.5);
+  solver2.addFix(6, Dof::UZ, 0.001*0.8660254037844386);
+  solver2.addFix(6, Dof::UY, 0.001*0.5);
 
   solver2.attachFEStorage(&storage2);
 
