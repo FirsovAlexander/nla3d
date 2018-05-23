@@ -20,8 +20,8 @@ public:
 
   void buildK();
   void make_D(math::MatSym<3>& D);
-  math::Mat<3,18> make_B(uint16 np);
-  math::Mat<3,3> make_T();
+  math::Mat<3,18> make_B(uint16 np, uint16 npj);
+  math::Mat<18,18> make_T();
 
   void makeJacob();
 
@@ -36,6 +36,11 @@ public:
   double intL1(uint16 np);
   double intL2(uint16 np);
   double intL3(uint16 np);
+
+  double radoIntWeight(uint16 np, uint16 npj);
+  double radoIntL1(uint16 np);
+  double radoIntL2(uint16 np,uint16 npj);
+  double radoIntL3(uint16 np,uint16 npj);
 
   // strength
   double kn = 0.0, ks = 0.0;
@@ -66,6 +71,13 @@ struct TrianglePt {
   double L2;
   double L3;
   double W;
+};
+
+struct RadoPt {
+  double AJ;
+  double H;
+  double AI;
+  double AS;
 };
 
 // gauss quadrature for 3D trinangle from (0) to (1) in L-coordinates
@@ -111,6 +123,12 @@ static const TrianglePt _triangle_o5[] = {
   {0.10128651,     0.10128651,     0.79742699, 0.12593918}
 };
 
+static const RadoPt _rado_o3[] = {
+  {0.1127016654, 0.2777777778, 0.0885879595, 0.2204622112},
+  {0.5,          0.4444444444, 0.4094668644, 0.3881934688},
+  {0.8872983346, 0.2777777778, 0.7876594618, 0.3288443200}
+};
+
 // array of number of quadrature points in integration scheme
 static const uint16 _np_triangle[] = {
   sizeof(_triangle_o1) / sizeof(TrianglePt),
@@ -121,7 +139,8 @@ static const uint16 _np_triangle[] = {
 };
 
 inline uint16 ElementINTER3::nOfIntPoints(){
-  return _np_triangle[i_int];
+  //return _np_triangle[i_int];
+  return 3;
 }
 
 static const TrianglePt* _table_triangle[] = {
@@ -136,16 +155,32 @@ inline double ElementINTER3::intWeight(uint16 np){
   return _table_triangle[i_int][np].W * det;
 }
 
+inline double ElementINTER3::radoIntWeight(uint16 np, uint16 npj){
+  return _rado_o3[np].AS*_rado_o3[npj].H*(1-radoIntL1(np))* det;
+}
+
 inline double ElementINTER3::intL1(uint16 np){
   return _table_triangle[i_int][np].L1;
+}
+
+inline double ElementINTER3::radoIntL1(uint16 np){
+  return _rado_o3[np].AI;
 }
 
 inline double ElementINTER3::intL2(uint16 np){
   return _table_triangle[i_int][np].L2;
 }
 
+inline double ElementINTER3::radoIntL2(uint16 np, uint16 npj){
+  return _rado_o3[npj].AJ*(1-radoIntL1(np));
+}
+
 inline double ElementINTER3::intL3(uint16 np){
   return _table_triangle[i_int][np].L3;
+}
+
+inline double ElementINTER3::radoIntL3(uint16 np, uint16 npj){
+  return 1.-radoIntL1(np)-radoIntL2(np,npj);
 }
 
 } //namespace nla3d

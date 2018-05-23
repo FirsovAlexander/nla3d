@@ -10,7 +10,7 @@
 using namespace nla3d;
 
 int main (int argc, char* argv[]) {
-  const uint32 numberOfNodes = 6;
+  const uint32 numberOfNodes = 9;
   double nodeTable[numberOfNodes][3] = {
                           {0.0, 0.0, 0.0},
                           {1.,0., 0.},
@@ -19,8 +19,12 @@ int main (int argc, char* argv[]) {
 
                           {0.0, 0.0, 0.0},
                           {1.,0., 0.},
-                          {0., -0.8660254037844386, 0.5}
-                          /*{0., 0., -1.}*/};
+                          {0., -0.8660254037844386, 0.5},
+                          /*{0., 0., -1.}*/
+
+                        {0.0, 0.0, 0.0},
+                          {1.,0., 0.},
+                          {0., -0.8660254037844386, 0.5}};
   double kn = 1e8;
   double ks = 1e8;
   /*
@@ -186,9 +190,20 @@ int main (int argc, char* argv[]) {
   inter4->getNodeNumber(4) = 5;
   inter4->getNodeNumber(5) = 6;
 
+  ElementINTER3* inter5 = new ElementINTER3();
+  inter5->kn = kn;
+  inter5->ks = ks;
+  inter5->getNodeNumber(0) = 4;
+  inter5->getNodeNumber(1) = 5;
+  inter5->getNodeNumber(2) = 6;
+  inter5->getNodeNumber(3) = 7;
+  inter5->getNodeNumber(4) = 8;
+  inter5->getNodeNumber(5) = 9;
+
   //storage2.addElement(el3);
   //storage2.addElement(el4);
   storage2.addElement(inter4);
+   storage2.addElement(inter5);
   
   LinearFESolver solver2;
   solver2.addFix(1, Dof::UX);
@@ -203,12 +218,12 @@ int main (int argc, char* argv[]) {
   solver2.addFix(3, Dof::UY);
   solver2.addFix(3, Dof::UZ);
 
-  solver2.addFix(4, Dof::UZ, 0.001*0.8660254037844386);
-  solver2.addFix(4, Dof::UY, 0.001*0.5);
-  solver2.addFix(5, Dof::UZ, 0.001*0.8660254037844386);
-  solver2.addFix(5, Dof::UY, 0.001*0.5);
-  solver2.addFix(6, Dof::UZ, 0.001*0.8660254037844386);
-  solver2.addFix(6, Dof::UY, 0.001*0.5);
+  solver2.addFix(7, Dof::UZ, 0.001*0.8660254037844386);
+  solver2.addFix(7, Dof::UY, 0.001*0.5);
+  solver2.addFix(8, Dof::UZ, 0.001*0.8660254037844386);
+  solver2.addFix(8, Dof::UY, 0.001*0.5);
+  solver2.addFix(9, Dof::UZ, 0.001*0.8660254037844386);
+  solver2.addFix(9, Dof::UY, 0.001*0.5);
 
   solver2.attachFEStorage(&storage2);
 
