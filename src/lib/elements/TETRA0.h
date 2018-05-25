@@ -36,11 +36,29 @@ public:
 
   void makeB (math::Mat<6,12> &B);
   void makeC (math::MatSym<6> &C);
+  void makeT (Eigen::MatrixXd &T);
 
+  //0 - isotropy, 1 - ortotropy
+  int anisotropy = 0;
+
+  // Isotropic coefficients
   // Elastic module
   double E = 0.0;
   // Poissons coef.
   double my = 0.0;
+
+  // Ortotropic coefficients
+  double EX = 0.;
+  double EY = 0.;
+  double EZ = 0.;
+  double myXY = 0.;
+  double myYZ = 0.;
+  double myXZ = 0.;  
+  double GXY = 0.;
+  double GYZ = 0.;
+  double GXZ = 0.;
+
+  Eigen::MatrixXd rotmat;
 
   //tensile strength
   //stretching
@@ -49,6 +67,20 @@ public:
   double pC = 0.0;
   //shear
   double pSh = 0.0;
+
+  // Ortotropic coefficients
+  //stretching
+  double pEX = 0.0;
+  double pEY = 0.0;
+  double pEZ = 0.0;
+  //compress
+  double pCX = 0.0;
+  double pCY = 0.0;
+  double pCZ = 0.0;
+  //shear
+  double pShXY = 0.0;
+  double pShYZ = 0.0;
+  double pShXZ = 0.0;
 
   //heat
   double alpha = 0.0;

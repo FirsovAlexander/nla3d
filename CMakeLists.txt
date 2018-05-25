@@ -108,6 +108,9 @@ set (NLA3D_APP_SOURCES "src/main.cpp;src/FEReaders.cpp")
 # an executable to use TRUSS3 element
 set (NLA3D_TRUSS_APP_SOURCES "src/main_truss.cpp")
 
+# an executable to use TRUSS3 element
+set (NLA3D_1D_APP_SOURCES "src/main_tetra0_1D.cpp;src/FEReaders.cpp")
+
 #main executable of the project: nla3d.exe program
 add_executable(nla3d ${NLA3D_APP_SOURCES})
 target_link_libraries(nla3d nla3d_lib)
@@ -115,6 +118,9 @@ target_link_libraries(nla3d nla3d_lib)
 
 add_executable(nla3d_truss ${NLA3D_TRUSS_APP_SOURCES})
 target_link_libraries(nla3d_truss nla3d_lib)
+
+add_executable(nla3d_1D ${NLA3D_1D_APP_SOURCES})
+target_link_libraries(nla3d_1D nla3d_lib)
 
 # Add logic to INSTALL.vcproj to copy app.exe to destination directory
 install (TARGETS nla3d

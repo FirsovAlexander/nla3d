@@ -6,6 +6,7 @@ namespace nla3d {
 
 ElementTETRA0::ElementTETRA0 () {
   type = ElementType::TETRA0;
+  rotmat.resize(3,3);
 }
 
 void ElementTETRA0::pre () {
@@ -44,7 +45,6 @@ void ElementTETRA0::buildK() {
   math::matBTDBprod(matB, matC, vol, matKe);
   // start assemble procedure. Here we should provide element stiffness matrix and an order of 
   // nodal DoFs in the matrix.
-
   math::Vec<12> Fe;
   Fe.zero();
 
@@ -60,7 +60,16 @@ void ElementTETRA0::buildK() {
     math::matBVprod(matBTC, tStrains, (-1)*vol, Fe);
   }
   math::matBVprod(matBTC, strains, (-1)*vol, Fe);
-  assembleK(matKe, Fe,{Dof::UX, Dof::UY, Dof::UZ});
+  if (anisotropy == 1){
+    Eigen::MatrixXd matT(12,12);
+    makeT(matT);
+    Eigen::MatrixXd matKeE = Eigen::Map<Eigen::MatrixXd>(matKe.toMat().ptr(),12,12);
+    Eigen::MatrixXd matKeT(12,12);
+    matKeT.triangularView<Eigen::Upper>() = matT.transpose()*matKeE*matT;
+    assembleK(matKeT, Fe,{Dof::UX, Dof::UY, Dof::UZ});
+  }else{
+    assembleK(matKe, Fe,{Dof::UX, Dof::UY, Dof::UZ});
+  }
 }
 
 // after solution it's handy to calculate stresses, strains and other stuff in elements.
@@ -176,19 +185,49 @@ void ElementTETRA0::makeB(math::Mat<6,12> &B)
     }
 }
 
+void ElementTETRA0::makeT (Eigen::MatrixXd &T){
+  Eigen::MatrixXd Z = Eigen::MatrixXd::Zero(3,3);
+  T << rotmat, Z, Z, Z,
+       Z, rotmat, Z, Z,
+       Z, Z, rotmat, Z,
+       Z, Z, Z, rotmat;
+}
+
 void ElementTETRA0::makeC (math::MatSym<6> &C) {
-  const double A = E/((1.+my)*(1.-2.*my));
+  if (anisotropy == 0){
+    const double A = E/((1.+my)*(1.-2.*my));
 
-  C.comp(0,0) = (1.-my)*A;
-  C.comp(0,1) = my*A;
-  C.comp(0,2) = my*A;
-  C.comp(1,1) = (1.-my)*A;
-  C.comp(1,2) = my*A;
-  C.comp(2,2) = (1.-my)*A;
+    C.comp(0,0) = (1.-my)*A;
+    C.comp(0,1) = my*A;
+    C.comp(0,2) = my*A;
+    C.comp(1,1) = (1.-my)*A;
+    C.comp(1,2) = my*A;
+    C.comp(2,2) = (1.-my)*A;
 
-  C.comp(3,3) = (1./2.-my)*A;
-  C.comp(4,4) = (1./2.-my)*A;
-  C.comp(5,5) = (1./2.-my)*A;
+    C.comp(3,3) = (1./2.-my)*A;
+    C.comp(4,4) = (1./2.-my)*A;
+    C.comp(5,5) = (1./2.-my)*A;
+  }
+  else if (anisotropy == 1){
+    Eigen::MatrixXd matJ(6,6);
+    matJ << 1./EX,       -myXY/EY, -myXZ/EZ, 0.,         0.,          0.,
+            -myXY/EY,    1./EY,    -myYZ/EZ, 0.,         0.,          0.,
+            -myXZ/EZ,    -myYZ/EZ,  1./EZ,    0.,         0.,          0.,
+            0.,    0.,       0.,       1./GXY,  0.,          0.,
+            0.,    0.,       0.,       0.,         1./GYZ,   0.,
+            0.,    0.,       0.,       0.,         0.,          1./GXZ;
+
+    Eigen::MatrixXd inv_matJ(6,6);
+    inv_matJ = matJ.inverse();
+    for (int i = 0; i < 6; i++){
+      for (int j = i; j < 6; j++){
+        C.comp(i,j) = inv_matJ(i,j);
+      }
+    }
+  }
+  else
+    LOG(FATAL) << "Wrong isotropy type!";
+
 }
 
 int ElementTETRA0::permute(int i){
