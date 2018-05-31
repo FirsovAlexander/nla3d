@@ -34,8 +34,8 @@ public:
 // on found DoFs solution.
   void update();
 
-  void makeB (math::Mat<6,12> &B);
-  void makeC (math::MatSym<6> &C);
+  void makeB (Eigen::MatrixXd &B);
+  void makeC (Eigen::MatrixXd &C);
   void makeT (Eigen::MatrixXd &T);
 
   //0 - isotropy, 1 - ortotropy
@@ -99,9 +99,6 @@ public:
   //postproc procedures
   bool getScalar(double* scalar, scalarQuery code, uint16 gp, const double scale);
   bool getTensor(math::MatSym<3>* tensor, tensorQuery code, uint16 gp, const double scale);
-
-private:
-  int permute(int i);
 };
 
 } //namespace nla3d

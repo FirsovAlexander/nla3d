@@ -146,8 +146,7 @@ class Element {
                    std::initializer_list<Dof::dofType> _nodeDofs);
 
     void assembleK(Eigen::Ref<Eigen::MatrixXd> Ke, std::initializer_list<Dof::dofType> _nodeDofs);
-    template <uint16 dimM>
-    void assembleK(Eigen::Ref<Eigen::MatrixXd> Ke, math::Vec<dimM> &Fe, std::initializer_list<Dof::dofType> _nodeDofs);
+    void assembleK(Eigen::Ref<Eigen::MatrixXd> Ke, Eigen::Ref<Eigen::VectorXd> Fe, std::initializer_list<Dof::dofType> _nodeDofs);
 
     friend class FEStorage;
   protected:
@@ -329,40 +328,6 @@ void Element::assembleK(math::MatSym<dimM> &Ke, math::Vec<dimM> &Fe, std::initia
           } else {
             storage->addValueK(nodes[i], nodeDof[di], nodes[j], nodeDof[dj], *Ke_p);
             Ke_p++;
-          }
-        }
-      }
-    }
-  }
-
-  double* Fe_p = Fe.ptr();
-  for (uint16 i=0; i < getNNodes(); i++) {
-    for (uint16 di=0; di < dim; di++) {
-            storage->addValueF(nodes[i], nodeDof[di], *Fe_p);
-            Fe_p++;
-    }
-  }
-}
-
-template <uint16 dimM>
-void Element::assembleK(Eigen::Ref<Eigen::MatrixXd> Ke,
-                       math::Vec<dimM> &Fe,
-                       std::initializer_list<Dof::dofType> _nodeDofs) {
-  assert (nodes != NULL);
-  assert (Ke.rows() == Ke.cols());
-  std::vector<Dof::dofType> nodeDof(_nodeDofs);
-  uint16 dim = static_cast<uint16> (_nodeDofs.size());
-  assert (getNNodes() * dim == Ke.rows());
-
-  for (uint16 i=0; i < getNNodes(); i++) {
-    for (uint16 di=0; di < dim; di++) {
-      for (uint16 j=i; j < getNNodes(); j++) {
-        for (uint16 dj=0; dj < dim; dj++) {
-          if ((i==j) && (dj<di)) {
-            continue;
-          } else {
-            storage->addValueK(nodes[i], nodeDof[di], nodes[j], nodeDof[dj], 
-                Ke.selfadjointView<Eigen::Upper>()(i*dim+di, j*dim +dj));
           }
         }
       }

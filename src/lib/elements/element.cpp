@@ -59,6 +59,20 @@ void Element::assembleK(Eigen::Ref<Eigen::MatrixXd> Ke,
   }
 }
 
+void Element::assembleK(Eigen::Ref<Eigen::MatrixXd> Ke,
+                       Eigen::Ref<Eigen::VectorXd>  Fe,
+                       std::initializer_list<Dof::dofType> _nodeDofs) {
+  assembleK(Ke,_nodeDofs);
+  std::vector<Dof::dofType> nodeDof(_nodeDofs);
+  uint16 dim = static_cast<uint16> (_nodeDofs.size());
+
+  for (uint16 i=0; i < getNNodes(); i++) {
+    for (uint16 di=0; di < dim; di++) {
+      storage->addValueF(nodes[i], nodeDof[di], Fe(i*dim + di));
+    }
+  }
+}
+
 
 void Element::buildC() {
   LOG(FATAL) << "buildC is not implemented";

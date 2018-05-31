@@ -59,24 +59,29 @@ int main (int argc, char* argv[]) {
         sind = storage.createElements(ind.size(), ElementType::TETRA0);
         for (uint32 i = 0; i < sind.size(); i++) {
             ElementTETRA0& el = (ElementTETRA0&)storage.getElement(sind[i]);
-            if (iPhase == 1){
+            //if (iPhase == 1){4e11
                 el.anisotropy = 1;
-
-
-                el.rotmat << 0., 0., 1., //x_loc
-                             0., 1., 0., //y_loc
-                            -1., 0., 0.; //z_loc
                 
-                el.EX =  5.0e11;
-                el.EY =  2.0e11;
-                el.EZ =  2.0e11;
+
+                el.rotmat << 0., 0., -1., //x_loc
+                             0., 1., 0., //y_loc
+                             1., 0., 0.; //z_loc
+                
+                
+                el.EX =  4.0e11;
+                el.EY =  4.0e11;
+                el.EZ =  5.0e11;
                 el.myXY = 0.3;
                 el.myYZ = 0.3;
                 el.myXZ = 0.3;
-                el.GXY = 192307692307.6923;
-                el.GYZ = 38461538461.53846;
-                el.GXZ = 192307692307.6923;
-
+                el.GXY = 9.e8;
+                el.GYZ = 9.e8;
+                el.GXZ = 9.e8;
+                
+                /*
+                el.E = 5e11;
+                el.my = 0.3;
+                */
                 /*
                 el.EX =  2e11;
                 el.EY =  2e11;
@@ -88,11 +93,11 @@ int main (int argc, char* argv[]) {
                 el.GYZ = 76.923e9;
                 el.GXZ = 76.923e9;
                 */    
-            }
+            /*}
             if (iPhase == 0){
                 el.E = 2e11;
                 el.my = 0.3;
-            }
+            }*/
         
             el.getNodeNumber(0) = md.cellNodes[ind[i]][0];
             el.getNodeNumber(1) = md.cellNodes[ind[i]][1];
