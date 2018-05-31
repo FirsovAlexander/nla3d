@@ -41,8 +41,6 @@ void ElementINTER3::buildK() {
 
   matBTDBprod(T, Ke, 1., KeT);
 
-  LOG(DEBUG) << "Ke = " << KeT.toMat(); 
-
   assembleK(KeT, {Dof::UX, Dof::UY, Dof::UZ});
 }
 
@@ -55,14 +53,14 @@ void ElementINTER3::update () {
     U[i*3 + 2] = storage->getNodeDofSolution(getNodeNumber(i), Dof::UZ);
   }
   math::Mat<18,18> T = make_T();
+  //math::Vec<18> TU = T*U;
   strains.zero();
   for (uint16 np=0; np < nOfIntPoints(); np++) {
     for (uint16 npj=0; npj < nOfIntPoints(); npj++) {
       //double dWt = intWeight(np);
       double dWt = radoIntWeight(np,npj);
       math::Mat<3,18> matB = make_B(np,npj);
-      matB = matB*T;
-      matBVprod(matB, U, 1., strains);
+      matBVprod(matB,U, dWt, strains);
     }
   }
 
@@ -162,11 +160,11 @@ math::Mat<18,18> ElementINTER3::make_T(){
   s1 = s1*(1./s1.length());
   s2 = s2*(1./s2.length());
   //Матрица поворота от глоб к локальной ск
-  math::Mat<3,3> Tn (s1[0],s2[0],n[0],
-                    s1[1],s2[1],n[1],
-                    s1[2],s2[2],n[2]);
+  math::Mat<3,3> Tn (s1[0],s1[1],s1[2],
+                     s2[0],s2[1],s2[2],
+                     n[0], n[1], n[2]);
+  normal = n;
   math::Mat<3,3> invT = Tn.inv(Tn.det());
-  //Tn = invT;
   math::Mat<18,18> T;
   T.zero();
 

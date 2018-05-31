@@ -47,6 +47,7 @@ public:
 
   math::Vec<3> strains;
   math::Vec<3> stress;
+  math::Vec<3> normal;
 
   uint16 i_int = 4; // index of integration scheme
   double det = 0.; // determinant of Jacob matrix
