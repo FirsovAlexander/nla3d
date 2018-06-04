@@ -22,10 +22,11 @@ public:
 
   math::Vec<3> n; //local axis of spring
 
-  math::Vec<3> deltaPos; //local axis of spring
+  math::Vec<3> strains; // displacement jump
 
   //postproc procedures
   bool getVector(math::Vec<3>* vector, vectorQuery code, uint16 gp, const double scale);
+  bool getTensor(math::MatSym<3>* tensor, tensorQuery query, uint16 gp, const double scale);
 };
 
 } //namespace nla3d

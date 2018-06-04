@@ -33,9 +33,10 @@ void ElementINTER0::buildK() {
   s1 = s1*(1./s1.length());
   s2 = s2*(1./s2.length());
 
-  T << s1[0], s2[0], n[0],
-       s1[1], s2[1], n[1],
-       s1[2], s2[2], n[2];
+
+  T <<  s1[0],s1[1],s1[2],
+        s2[0],s2[1],s2[2],
+        n[0], n[1], n[2];
 
   Eigen::MatrixXd invT(3,3);
   invT = T.inverse();
@@ -44,12 +45,10 @@ void ElementINTER0::buildK() {
        0,  ks, 0,
        0,  0, kn;
 
-  K = invT.transpose()*K*invT;
+  K = T.transpose()*K*T;
 
   Ke << K ,  -K,
        -K,    K;
-
-  LOG(INFO) << Ke;
 
   assembleK(Ke, {Dof::UX, Dof::UY, Dof::UZ});
 }
@@ -61,9 +60,11 @@ void ElementINTER0::update () {
     U(i*3 + 1) = storage->getNodeDofSolution(getNodeNumber(i), Dof::UY);
     U(i*3 + 2) = storage->getNodeDofSolution(getNodeNumber(i), Dof::UZ);
   }
-  deltaPos[0] = (U(0)+U(3));
-  deltaPos[1] = (U(1)+U(4));
-  deltaPos[2] = (U(2)+U(5));
+  LOG(DEBUG) << U;
+  strains[0] = U(3)-U(0);
+  strains[1] = U(4)-U(1);
+  strains[2] = U(5)-U(2);
+  LOG(DEBUG) << strains;
 }
 
 bool  ElementINTER0::getVector(math::Vec<3>* vector, vectorQuery query, uint16 gp, const double scale) {
@@ -78,6 +79,18 @@ bool  ElementINTER0::getVector(math::Vec<3>* vector, vectorQuery query, uint16 g
   } 
   */
   return false;
+}
+
+bool ElementINTER0::getTensor(math::MatSym<3>* tensor, tensorQuery query, uint16 gp, const double scale){
+  if (query == tensorQuery::C){
+      tensor->comp(0,0) += strains[0];
+      tensor->comp(1,1) += strains[1];
+      tensor->comp(2,2) += strains[2];
+      tensor->comp(0,1) += 0.;
+      tensor->comp(1,2) += 0.;
+      tensor->comp(0,2) += 0.;
+      return true;
+  }
 }
 
 } //namespace nla3d

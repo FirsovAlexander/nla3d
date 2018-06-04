@@ -21,8 +21,8 @@ int main (int argc, char* argv[]) {
                           {1.,0., 0.},
                           {0., -0.8660254037844386, 0.5},
                           /*{0., 0., -1.}*/
-
-                        {0.0, 0.0, 0.0},
+                          
+                          {0.0, 0.0, 0.0},
                           {1.,0., 0.},
                           {0., -0.8660254037844386, 0.5}};
   double kn = 1e8;
@@ -153,7 +153,7 @@ int main (int argc, char* argv[]) {
   solver.solve();
 
   /*2D interface solution*/
-  
+  /*
   FEStorage storage2;
   // Create and add nodes into FEStorage
   for (uint32 i = 1; i <= numberOfNodes; i++) {
@@ -234,5 +234,98 @@ int main (int argc, char* argv[]) {
   math::PARDISO_equationSolver eqSolver2 = math::PARDISO_equationSolver();
   solver2.attachEquationSolver(&eqSolver2);  
   solver2.solve();
+  */
+  FEStorage storage2;
+  // Create and add nodes into FEStorage
+  for (uint32 i = 1; i <= numberOfNodes; i++) {
+    Node* no = new Node;
+    no->pos[0] = nodeTable[i-1][0];
+    no->pos[1] = nodeTable[i-1][1];
+    no->pos[2] = nodeTable[i-1][2];
+    storage2.addNode(no);
+  }
+
+  math::Vec<3> loc = {0.,0.5,0.8660254037844386};
+
+  ElementINTER0* inter1 = new ElementINTER0();
+  inter1->kn = kn;
+  inter1->ks = ks;
+  inter1->n = loc;
+  inter1->getNodeNumber(0) = 1;
+  inter1->getNodeNumber(1) = 4;
   
+  ElementINTER0* inter2 = new ElementINTER0();
+  inter2->kn = kn;
+  inter2->ks = ks;
+  inter2->n = loc;
+  inter2->getNodeNumber(0) = 2;
+  inter2->getNodeNumber(1) = 5;
+
+  ElementINTER0* inter3 = new ElementINTER0();
+  inter3->kn = kn;
+  inter3->ks = ks;
+  inter3->n = loc;
+  inter3->getNodeNumber(0) = 3;
+  inter3->getNodeNumber(1) = 6;
+
+  ElementINTER0* inter4 = new ElementINTER0();
+  inter4->kn = kn*2.;
+  inter4->ks = ks;
+  inter4->n = loc;
+  inter4->getNodeNumber(0) = 4;
+  inter4->getNodeNumber(1) = 7;
+
+  ElementINTER0* inter5 = new ElementINTER0();
+  inter5->kn = kn*2.;
+  inter5->ks = ks;
+  inter5->n = loc;
+  inter5->getNodeNumber(0) = 5;
+  inter5->getNodeNumber(1) = 8;
+
+  ElementINTER0* inter6 = new ElementINTER0();
+  inter6->kn = kn*2.;
+  inter6->ks = ks;
+  inter6->n = loc;
+  inter6->getNodeNumber(0) = 6;
+  inter6->getNodeNumber(1) = 9;
+
+
+  storage2.addElement(inter1);
+  storage2.addElement(inter2);
+  storage2.addElement(inter3);
+  storage2.addElement(inter4);
+  storage2.addElement(inter5);
+  storage2.addElement(inter6);
+
+  LinearFESolver solver2;
+
+  solver2.addFix(1, Dof::UX);
+  solver2.addFix(1, Dof::UY);
+  solver2.addFix(1, Dof::UZ);
+
+  solver2.addFix(2, Dof::UX);
+  solver2.addFix(2, Dof::UY);
+  solver2.addFix(2, Dof::UZ);
+
+  solver2.addFix(3, Dof::UX);
+  solver2.addFix(3, Dof::UY);
+  solver2.addFix(3, Dof::UZ);
+
+  solver2.addFix(7, Dof::UZ, 0.001*0.8660254037844386);
+  solver2.addFix(7, Dof::UY, 0.001*0.5);
+  solver2.addFix(8, Dof::UZ, 0.001*0.8660254037844386);
+  solver2.addFix(8, Dof::UY, 0.001*0.5);
+  solver2.addFix(9, Dof::UZ, 0.001*0.8660254037844386);
+  solver2.addFix(9, Dof::UY, 0.001*0.5);
+
+  solver2.attachFEStorage(&storage2);
+
+  VtkProcessor* vtk2 = new VtkProcessor(&storage2, "inter2");
+  vtk2->writeAllResults();
+  solver2.addPostProcessor(vtk2);
+
+  math::PARDISO_equationSolver eqSolver2 = math::PARDISO_equationSolver();
+  solver2.attachEquationSolver(&eqSolver2);  
+  solver2.solve();
+
 }
