@@ -19,9 +19,10 @@ public:
   void pre();
 
   void buildK();
-  void make_D(math::MatSym<3>& D);
-  math::Mat<3,18> make_B(uint16 np, uint16 npj);
-  math::Mat<18,18> make_T();
+  void make_D(Eigen::MatrixXd& D);
+  Eigen::MatrixXd make_B(uint16 np, uint16 npj);
+  Eigen::MatrixXd make_subB(uint16 np, uint16 npj);
+  Eigen::MatrixXd make_T();
 
   void makeJacob();
 

@@ -60,11 +60,9 @@ void ElementINTER0::update () {
     U(i*3 + 1) = storage->getNodeDofSolution(getNodeNumber(i), Dof::UY);
     U(i*3 + 2) = storage->getNodeDofSolution(getNodeNumber(i), Dof::UZ);
   }
-  LOG(DEBUG) << U;
   strains[0] = U(3)-U(0);
   strains[1] = U(4)-U(1);
-  strains[2] = U(5)-U(2);
-  LOG(DEBUG) << strains;
+  strains[2] = U(5)-U(2);;
 }
 
 bool  ElementINTER0::getVector(math::Vec<3>* vector, vectorQuery query, uint16 gp, const double scale) {

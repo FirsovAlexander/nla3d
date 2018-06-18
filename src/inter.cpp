@@ -153,7 +153,7 @@ int main (int argc, char* argv[]) {
   solver.solve();
 
   /*2D interface solution*/
-  /*
+  
   FEStorage storage2;
   // Create and add nodes into FEStorage
   for (uint32 i = 1; i <= numberOfNodes; i++) {
@@ -183,22 +183,22 @@ int main (int argc, char* argv[]) {
   ElementINTER3* inter4 = new ElementINTER3();
   inter4->kn = kn;
   inter4->ks = ks;
-  inter4->getNodeNumber(0) = 1;
-  inter4->getNodeNumber(1) = 2;
-  inter4->getNodeNumber(2) = 3;
-  inter4->getNodeNumber(3) = 4;
-  inter4->getNodeNumber(4) = 5;
-  inter4->getNodeNumber(5) = 6;
+  inter4->getNodeNumber(0) = 4;
+  inter4->getNodeNumber(1) = 5;
+  inter4->getNodeNumber(2) = 6;
+  inter4->getNodeNumber(3) = 1;
+  inter4->getNodeNumber(4) = 2;
+  inter4->getNodeNumber(5) = 3;
 
   ElementINTER3* inter5 = new ElementINTER3();
   inter5->kn = kn;
   inter5->ks = ks;
-  inter5->getNodeNumber(0) = 4;
-  inter5->getNodeNumber(1) = 5;
-  inter5->getNodeNumber(2) = 6;
-  inter5->getNodeNumber(3) = 7;
-  inter5->getNodeNumber(4) = 8;
-  inter5->getNodeNumber(5) = 9;
+  inter5->getNodeNumber(0) = 7;
+  inter5->getNodeNumber(1) = 8;
+  inter5->getNodeNumber(2) = 9;
+  inter5->getNodeNumber(3) = 4;
+  inter5->getNodeNumber(4) = 5;
+  inter5->getNodeNumber(5) = 6;
 
   //storage2.addElement(el3);
   //storage2.addElement(el4);
@@ -234,7 +234,8 @@ int main (int argc, char* argv[]) {
   math::PARDISO_equationSolver eqSolver2 = math::PARDISO_equationSolver();
   solver2.attachEquationSolver(&eqSolver2);  
   solver2.solve();
-  */
+  
+  /*
   FEStorage storage2;
   // Create and add nodes into FEStorage
   for (uint32 i = 1; i <= numberOfNodes; i++) {
@@ -327,5 +328,6 @@ int main (int argc, char* argv[]) {
   math::PARDISO_equationSolver eqSolver2 = math::PARDISO_equationSolver();
   solver2.attachEquationSolver(&eqSolver2);  
   solver2.solve();
+  */
 
 }
