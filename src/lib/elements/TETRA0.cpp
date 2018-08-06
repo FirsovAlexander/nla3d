@@ -43,7 +43,7 @@ void ElementTETRA0::buildK() {
 
   math::matBTDBprod(matB, matC, vol, matKe);
 
-  if ((alpha != 0. && T != 0.) || strains.qlength() != 0.){
+  if ((alpha != 0. && T != 0.) || strains.qlength() != 0. || stress.qlength() != 0.){
     //node forces calculations
     math::Vec<12> Fe;
     Fe.zero();
@@ -56,6 +56,13 @@ void ElementTETRA0::buildK() {
       //temp node forces
       math::Vec<6> tStrains = {alpha*T,alpha*T,alpha*T,0.,0.,0.};
       strains = strains + tStrains;
+    }
+    //mechanical initial stress
+    if (stress.qlength() != 0.){
+      strains.zero();
+      math::Mat<6,6> matP;
+      matP = matC.toMat().inv(matC.toMat().det());
+      strains = matP*stress;
     }
 
     //mechanical initial strains
