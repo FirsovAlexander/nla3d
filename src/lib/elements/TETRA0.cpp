@@ -65,6 +65,7 @@ void ElementTETRA0::buildK() {
       strains = matP*stress;
     }
 
+    LOG(DEBUG) << strains;
     //mechanical initial strains
     math::matBVprod(matBTC, strains, -vol, Fe);
 

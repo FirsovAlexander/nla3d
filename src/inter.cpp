@@ -25,8 +25,8 @@ int main (int argc, char* argv[]) {
                           {0.0, 0.0, 0.0},
                           {1.,0., 0.},
                           {0., -0.8660254037844386, 0.5}};
-  double kn = 1e8;
-  double ks = 1e8;
+  double kn = 1.;
+  double ks = 1.;
   /*
   math::Vec<3> loc = {0.,0.,1.};
 

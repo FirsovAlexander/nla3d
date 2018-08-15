@@ -66,16 +66,6 @@ void ElementINTER0::update () {
 }
 
 bool  ElementINTER0::getVector(math::Vec<3>* vector, vectorQuery query, uint16 gp, const double scale) {
-  /*
-  switch (query) {
-    case vectorQuery::FLUX:
-      *vector += flux*scale;
-      return true;
-    case vectorQuery::GRADT:
-      *vector += flux*(scale/k);
-      return true;
-  } 
-  */
   return false;
 }
 

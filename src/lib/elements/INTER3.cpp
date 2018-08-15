@@ -23,18 +23,31 @@ void ElementINTER3::buildK() {
 
   makeJacob();
 
-  // build Ke
+  // build Ke in local sys
   double dWt; //Gaussian quadrature weight
   for (uint16 np=0; np < nOfIntPoints(); np++) {
      for (uint16 npj=0; npj < nOfIntPoints(); npj++) {
-      //dWt = intWeight(np);
       dWt = radoIntWeight(np,npj);
       Eigen::MatrixXd matB = make_B(np,npj);
       Ke.triangularView<Eigen::Upper>() += dWt*matB.transpose()*D*matB;
     }
   }// loop over integration points
 
-  assembleK(Ke, {Dof::UX, Dof::UY, Dof::UZ});
+  Eigen::MatrixXd T_Ke(18,18);
+  Eigen::MatrixXd T = make_T();
+  Eigen::MatrixXd z = Eigen::MatrixXd::Zero(3,3);
+
+  T_Ke << T, z, z, z, z, z,
+          z, T, z, z, z, z,
+          z, z, T, z, z, z,
+          z, z, z, T, z, z,
+          z, z, z, z, T, z,
+          z, z, z, z, z, T;
+  // build Ke in global sys
+  Eigen::MatrixXd Ke_glob(18,18);
+  Ke_glob.setZero();
+  Ke_glob =  T_Ke.transpose()*Ke*T_Ke;     
+  assembleK(Ke_glob, {Dof::UX, Dof::UY, Dof::UZ});
 }
 
 void ElementINTER3::update () {
@@ -54,6 +67,15 @@ void ElementINTER3::update () {
     U2(i*3 + 1) = storage->getNodeDofSolution(getNodeNumber(i+3), Dof::UY);
     U2(i*3 + 2) = storage->getNodeDofSolution(getNodeNumber(i+3), Dof::UZ);
   }
+
+  Eigen::MatrixXd T = make_T();
+  Eigen::MatrixXd T_U(9,9);
+  Eigen::MatrixXd z = Eigen::MatrixXd::Zero(3,3);
+  T_U << T.inverse(), z, z,
+         z, T.inverse(), z,
+         z, z, T.inverse();
+  U1 = T_U*U1;
+  U2 = T_U*U2;
 
   //Интегрированные по площади перемещения верхнего и нижнего треугольников
   Eigen::VectorXd U1S(3);
@@ -78,11 +100,9 @@ void ElementINTER3::update () {
   make_D(D);
   Eigen::VectorXd stressE(3);
   stressE = D*strainsE;
-
-  Eigen::MatrixXd T = make_T();
-
-  strainsE = T*strainsE;
-  stressE = T*stressE;
+  
+  strainsE = T.inverse()*strainsE;
+  stressE = T.inverse()*stressE;
 
   for (int i(0); i < 3; i++){
     stress[i] = stressE(i);
@@ -106,9 +126,8 @@ void ElementINTER3::makeJacob(){
 
   math::Mat<2,2> J(locX1[0]-locX3[0],locX1[1]-locX3[1],
                    locX2[0]-locX3[0],locX2[1]-locX3[1]);
-  math::Mat<2,2> invJ = J.inv(J.det());
 
-  det = abs(invJ.det()); //Якобиан перехода между L координатами и локальными декартовыми
+  det = fabs(J.det()); //Якобиан перехода между L координатами и локальными декартовыми
 }
 
 void ElementINTER3::make_D(Eigen::MatrixXd& D){
@@ -131,12 +150,7 @@ Eigen::MatrixXd ElementINTER3::make_subB(uint16 np, uint16 npj){
         0., 0., radoIntL2(np,npj);
   N3 << radoIntL3(np,npj), 0., 0., 
         0., radoIntL3(np,npj), 0., 
-        0., 0., radoIntL3(np,npj);     
-  
-  Eigen::MatrixXd T = make_T();
-  N1 = T.transpose()*N1;
-  N2 = T.transpose()*N2;
-  N3 = T.transpose()*N3;
+        0., 0., radoIntL3(np,npj);    
 
   Eigen::MatrixXd B(3,9);
   B << N1, N2, N3;
@@ -146,6 +160,7 @@ Eigen::MatrixXd ElementINTER3::make_subB(uint16 np, uint16 npj){
 }
 
 Eigen::MatrixXd ElementINTER3::make_B(uint16 np, uint16 npj){ 
+  // in local sys
   Eigen::MatrixXd N1(3,3);
   Eigen::MatrixXd N2(3,3);
   Eigen::MatrixXd N3(3,3);
@@ -159,11 +174,6 @@ Eigen::MatrixXd ElementINTER3::make_B(uint16 np, uint16 npj){
   N3 << radoIntL3(np,npj), 0., 0., 
         0., radoIntL3(np,npj), 0., 
         0., 0., radoIntL3(np,npj);     
-  
-  Eigen::MatrixXd T = make_T();
-  N1 = T.transpose()*N1;
-  N2 = T.transpose()*N2;
-  N3 = T.transpose()*N3;
 
   Eigen::MatrixXd B(3,18);
   B << N1, N2, N3, -N1, -N2, -N3;
@@ -191,7 +201,7 @@ Eigen::MatrixXd ElementINTER3::make_T(){
     s2 = s2*(-1.);
   }
   
-  //Матрица поворота от глоб к локальной ск
+  //Матрица поворота от локальной к глобальной ск
   Eigen::MatrixXd T(3,3); 
   T << s1[0],s2[0],n[0],
        s1[1],s2[1],n[1],
