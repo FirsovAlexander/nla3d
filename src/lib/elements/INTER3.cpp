@@ -85,7 +85,6 @@ void ElementINTER3::update () {
 
   for (uint16 np=0; np < nOfIntPoints(); np++) {
     for (uint16 npj=0; npj < nOfIntPoints(); npj++) {
-      //double dWt = intWeight(np);
       double dWt = radoIntWeight(np,npj);
       Eigen::MatrixXd matB = make_subB(np,npj);
       U1S += dWt*matB*U1;
