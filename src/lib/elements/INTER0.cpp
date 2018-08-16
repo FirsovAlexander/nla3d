@@ -31,7 +31,7 @@ void ElementINTER0::buildK() {
   
   n = n*(1./n.length());
   s1 = s1*(1./s1.length());
-  s2 = s2*(1./s2.length());
+  s2 = s2*(1./s2.length()); 
 
 
   T <<  s1[0],s1[1],s1[2],
@@ -79,6 +79,7 @@ bool ElementINTER0::getTensor(math::MatSym<3>* tensor, tensorQuery query, uint16
       tensor->comp(0,2) += 0.;
       return true;
   }
+  return false;
 }
 
 } //namespace nla3d

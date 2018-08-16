@@ -7,14 +7,9 @@
 
 namespace nla3d {
 
-class ElementINTER3 : public Element {
+class ElementINTER3 : public ElementWEDGE {
 public:
   ElementINTER3();
-
-  ElementINTER3& operator= (const ElementINTER3& from) {
-    Element::operator= (from);
-    return *this;
-  }
 
   void pre();
 

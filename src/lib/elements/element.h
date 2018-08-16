@@ -24,6 +24,7 @@ class FEStorage;
 // Element shapes are taken from vtk-file-formats.pdf
 enum ElementShape {
   VERTEX = 0,
+  TWIN_VERTEX,
   LINE,
   TRIANGLE,
   QUAD,
@@ -42,6 +43,7 @@ enum ElementShape {
 // number of dimensions in shape
 static const uint16 _shape_dim[] = {
   0,  // VERTEX
+  0,  // TWIN_VERTEX
   1,  // LINE
   2,  // TRIANGLE
   2,  // QUAD
@@ -59,7 +61,8 @@ static const uint16 _shape_dim[] = {
 
 // number of nodes in shape
 static const uint16 _shape_nnodes[] = {
-  2,  // VERTEX
+  1,  // VERTEX,
+  2,  // TWIN_VERTEX
   2,  // LINE
   3,  // TRIANGLE
   4,  // QUAD
@@ -173,6 +176,18 @@ class ElementVERTEX : public Element {
     }
 };
 
+class ElementTWIN_VERTEX : public Element {
+  public:
+    ElementTWIN_VERTEX() {
+      shape = ElementShape::TWIN_VERTEX;
+      nodes = new uint32[getNNodes()];
+    }
+
+    ElementTWIN_VERTEX& operator= (const ElementTWIN_VERTEX& from) {
+      Element::operator= (from);
+      return *this;
+    }
+};
 
 class ElementLINE : public Element {
   public:

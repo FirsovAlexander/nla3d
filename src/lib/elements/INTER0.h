@@ -7,7 +7,7 @@
 
 namespace nla3d {
 
-class ElementINTER0 : public ElementVERTEX {
+class ElementINTER0 : public ElementTWIN_VERTEX {
 public:
   ElementINTER0 ();
 
@@ -17,7 +17,7 @@ public:
 
   void update();
 
-  // strength
+  // stiffness
   double kn = 0.0, ks = 0.0;
 
   math::Vec<3> n; //local axis of spring

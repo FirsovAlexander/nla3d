@@ -3,8 +3,6 @@
 namespace nla3d {
 
 ElementINTER3::ElementINTER3 () {
-  shape = ElementShape::WEDGE;
-  nodes = new uint32[getNNodes()];
   type = ElementType::INTER3;
 }
 
@@ -51,7 +49,6 @@ void ElementINTER3::buildK() {
 }
 
 void ElementINTER3::update () {
-  //Eigen::VectorXd U(18);
   //Перемещения в узлах верхнего и нижнего треугольника
   Eigen::VectorXd U1(9);
   Eigen::VectorXd U2(9);
@@ -68,12 +65,13 @@ void ElementINTER3::update () {
     U2(i*3 + 2) = storage->getNodeDofSolution(getNodeNumber(i+3), Dof::UZ);
   }
 
-  Eigen::MatrixXd T = make_T();
+  Eigen::MatrixXd T_inv = make_T().inverse();
   Eigen::MatrixXd T_U(9,9);
   Eigen::MatrixXd z = Eigen::MatrixXd::Zero(3,3);
-  T_U << T.inverse(), z, z,
-         z, T.inverse(), z,
-         z, z, T.inverse();
+
+  T_U << T_inv, z, z,
+         z, T_inv, z,
+         z, z, T_inv;
   U1 = T_U*U1;
   U2 = T_U*U2;
 
@@ -100,8 +98,8 @@ void ElementINTER3::update () {
   Eigen::VectorXd stressE(3);
   stressE = D*strainsE;
   
-  strainsE = T.inverse()*strainsE;
-  stressE = T.inverse()*stressE;
+  strainsE = T_inv*strainsE;
+  stressE = T_inv*stressE;
 
   for (int i(0); i < 3; i++){
     stress[i] = stressE(i);
