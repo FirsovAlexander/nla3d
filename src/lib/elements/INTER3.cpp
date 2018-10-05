@@ -32,15 +32,17 @@ void ElementINTER3::buildK() {
   }// loop over integration points
 
   Eigen::MatrixXd T_Ke(18,18);
-  Eigen::MatrixXd T = make_T();
+  Eigen::MatrixXd T_trans = make_T().transpose();
   Eigen::MatrixXd z = Eigen::MatrixXd::Zero(3,3);
 
-  T_Ke << T, z, z, z, z, z,
-          z, T, z, z, z, z,
-          z, z, T, z, z, z,
-          z, z, z, T, z, z,
-          z, z, z, z, T, z,
-          z, z, z, z, z, T;
+
+  T_Ke << T_trans, z, z, z, z, z,
+          z, T_trans, z, z, z, z,
+          z, z, T_trans, z, z, z,
+          z, z, z, T_trans, z, z,
+          z, z, z, z, T_trans, z,
+          z, z, z, z, z, T_trans;
+
   // build Ke in global sys
   Eigen::MatrixXd Ke_glob(18,18);
   Ke_glob.setZero();
@@ -65,7 +67,8 @@ void ElementINTER3::update () {
     U2(i*3 + 2) = storage->getNodeDofSolution(getNodeNumber(i+3), Dof::UZ);
   }
 
-  Eigen::MatrixXd T_inv = make_T().inverse();
+  Eigen::MatrixXd T = make_T();
+  Eigen::MatrixXd T_inv = T.inverse();
   Eigen::MatrixXd T_U(9,9);
   Eigen::MatrixXd z = Eigen::MatrixXd::Zero(3,3);
 
@@ -91,15 +94,16 @@ void ElementINTER3::update () {
   }
 
   Eigen::VectorXd strainsE(3);
-  strainsE = U1S - U2S;
+  strainsE = U2S - U1S;
 
   Eigen::MatrixXd D(3,3);
   make_D(D);
   Eigen::VectorXd stressE(3);
   stressE = D*strainsE;
-  
-  strainsE = T_inv*strainsE;
-  stressE = T_inv*stressE;
+
+  // переход в глобальную ск
+  strainsE = T*strainsE;
+  stressE = T*stressE;
 
   for (int i(0); i < 3; i++){
     stress[i] = stressE(i);
@@ -124,7 +128,9 @@ void ElementINTER3::makeJacob(){
   math::Mat<2,2> J(locX1[0]-locX3[0],locX1[1]-locX3[1],
                    locX2[0]-locX3[0],locX2[1]-locX3[1]);
 
-  det = fabs(J.det()); //Якобиан перехода между L координатами и локальными декартовыми
+  det = J.det(); //Якобиан перехода между L координатами и локальными декартовыми
+  if (det < 0)
+    LOG(FATAL) << "Negative Jacobian value " << det;
 }
 
 void ElementINTER3::make_D(Eigen::MatrixXd& D){
@@ -191,12 +197,6 @@ Eigen::MatrixXd ElementINTER3::make_T(){
   n = n*(1./n.length());
   s1 = s1*(1./s1.length());
   s2 = s2*(1./s2.length());
-
-  if (n[1] < 0.){
-    n = n*(-1.);
-    s1 = s1*(-1.);
-    s2 = s2*(-1.);
-  }
   
   //Матрица поворота от локальной к глобальной ск
   Eigen::MatrixXd T(3,3); 

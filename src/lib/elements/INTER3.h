@@ -41,8 +41,11 @@ public:
   // strength
   double kn = 0.0, ks = 0.0;
 
+  // surface averaged strains
   math::Vec<3> strains;
+  // surface averaged stress
   math::Vec<3> stress;
+  // normal to triangle
   math::Vec<3> normal;
 
   uint16 i_int = 4; // index of integration scheme
