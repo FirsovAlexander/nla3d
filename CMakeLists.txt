@@ -119,10 +119,6 @@ target_link_libraries(nla3d nla3d_lib)
 add_executable(nla3d_truss ${NLA3D_TRUSS_APP_SOURCES})
 target_link_libraries(nla3d_truss nla3d_lib)
 
-set (NLA3D_INTER_APP_SOURCES "src/inter.cpp")
-add_executable(nla3d_inter ${NLA3D_INTER_APP_SOURCES})
-target_link_libraries(nla3d_inter nla3d_lib)
-
 # Add logic to INSTALL.vcproj to copy app.exe to destination directory
 install (TARGETS nla3d
      RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin)
