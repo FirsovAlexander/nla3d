@@ -6,6 +6,10 @@ namespace nla3d {
 
 ElementTETRA0::ElementTETRA0 () {
   type = ElementType::TETRA0;
+  rotmat.resize(3,3);
+  rotmat << 1., 0., 0.,
+            0., 1., 0., 
+            0., 0., 1.;
 }
 
 void ElementTETRA0::pre () {
@@ -23,54 +27,55 @@ void ElementTETRA0::buildK() {
           1. , storage->getNode(getNodeNumber(2)).pos[0] , storage->getNode(getNodeNumber(2)).pos[1] , storage->getNode(getNodeNumber(2)).pos[2] ,
           1. , storage->getNode(getNodeNumber(3)).pos[0] , storage->getNode(getNodeNumber(3)).pos[1] , storage->getNode(getNodeNumber(3)).pos[2];
 
+
   vol = matS.determinant()/6.;
   // Ke will store element stiffness matrix in global coordinates
-  math::MatSym<12> matKe;
-  matKe.zero();
+  Eigen::MatrixXd matKe(12,12);
+  matKe.setZero();
 
   // matB is strain matrix
-  math::Mat<6,12> matB;
-  matB.zero();
+  Eigen::MatrixXd matB(6,12);
 
   // matC is 3d elastic  matrix
-  math::MatSym<6> matC;
-  matC.zero();
+  Eigen::MatrixXd matC(6,6);
 
   // fill here matC
   makeC(matC);
   // fill here matB
-  makeB(matB);  
+  makeB(matB);
 
-  math::matBTDBprod(matB, matC, vol, matKe);
+  matKe=vol*matB.transpose()*matC*matB;
 
   if ((alpha != 0. && T != 0.) || strains.qlength() != 0. || stress.qlength() != 0.){
     //node forces calculations
-    math::Vec<12> Fe;
-    Fe.zero();
+    Eigen::VectorXd Fe(12);
+    Fe.setZero();
 
-    math::Mat<12,6> matBTC;
-    matBTC = matB.transpose()*matC.toMat();
+    //from initial strains
+    Eigen::VectorXd strainsE(6);
+    strainsE = Eigen::Map<Eigen::VectorXd>(strains.ptr(),6);
 
-    //mechanical initial stress
+    //mechanical initial stress (replace initial from strains)
     if (stress.qlength() != 0.){
-      strains.zero();
-      math::Mat<6,6> matP;
-      matP = matC.toMat().inv(matC.toMat().det());
-      strains = matP*stress;
+      strainsE.setZero();
+
+      Eigen::VectorXd stressE(6);
+      stressE = Eigen::Map<Eigen::VectorXd>(stress.ptr(),6);
+      
+      Eigen::MatrixXd matP;
+      matP = matC.inverse();
+      strainsE = matP*stressE;
     }
     
     //termal initial strains
     if (alpha != 0. && T != 0.){
-      //temp node forces
-      math::Vec<6> tStrains = {alpha*T,alpha*T,alpha*T,0.,0.,0.};
-      strains = strains + tStrains;
+      Eigen::VectorXd tStrains(6);
+      tStrains << alpha*T,alpha*T,alpha*T,0.,0.,0.;
+      strainsE = strainsE+tStrains;
     }
 
-
-    //mechanical initial strains
-    math::matBVprod(matBTC, strains, -vol, Fe);
-
-    assembleK(matKe, Fe, {Dof::UX, Dof::UY, Dof::UZ});
+    Fe = (-1)*vol*matB.transpose()*matC*strainsE;
+    assembleK(matKe,Fe,{Dof::UX, Dof::UY, Dof::UZ});
   }
   else{
     assembleK(matKe, {Dof::UX, Dof::UY, Dof::UZ});
@@ -80,36 +85,53 @@ void ElementTETRA0::buildK() {
 // after solution it's handy to calculate stresses, strains and other stuff in elements.
 void ElementTETRA0::update () {
   // matB is strain matrix
-  math::Mat<6,12> matB;
-  matB.zero();
+  Eigen::MatrixXd matB(6,12);
 
   // matC is 3d elastic  matrix
-  math::MatSym<6> matC;
-  matC.zero();
+  Eigen::MatrixXd matC(6,6);
 
   // fill here matC
   makeC(matC);
   // fill here matB
   makeB(matB);
+
   // get nodal solutions from storage
-  math::Vec<12> U;
+  Eigen::VectorXd U(12);
   for (uint16 i = 0; i < getNNodes(); i++) {
-    U[i*3 + 0] = storage->getNodeDofSolution(getNodeNumber(i), Dof::UX);
-    U[i*3 + 1] = storage->getNodeDofSolution(getNodeNumber(i), Dof::UY);
-    U[i*3 + 2] = storage->getNodeDofSolution(getNodeNumber(i), Dof::UZ);
+    U(i*3 + 0) = storage->getNodeDofSolution(getNodeNumber(i), Dof::UX);
+    U(i*3 + 1) = storage->getNodeDofSolution(getNodeNumber(i), Dof::UY);
+    U(i*3 + 2) = storage->getNodeDofSolution(getNodeNumber(i), Dof::UZ);
   }
   
-  //restore strains
-  strains.zero();
-  math::matBVprod(matB, U, -1.0, strains);
-  
-  stress.zero();
-  math::matBVprod(matC, strains, 1.0, stress);
+  // restore strains
+  // initial strains
+  Eigen::VectorXd strainsE0(6);
+  strainsE0 = Eigen::Map<Eigen::VectorXd>(strains.ptr(),6);
+
+  Eigen::VectorXd strainsE(6);
+  strainsE.setZero();
+  strainsE = (-1.)*matB*U;
+
+  //calc term strains
+  if (T > 0.){
+    Eigen::VectorXd tStrains(6);
+    tStrains << alpha*T, alpha*T, alpha*T, 0., 0., 0.;
+    strainsE = strainsE-tStrains;
+  }
+  strainsE = strainsE - strainsE0;
+  Eigen::Map<Eigen::VectorXd>( strains.ptr(), 6) = strainsE;
+
+  Eigen::VectorXd stressE(6);
+  stressE.setZero();
+  stressE = matC*strainsE;
+  Eigen::Map<Eigen::VectorXd>( stress.ptr(), 6) = stressE;
 }
 
-void ElementTETRA0::makeB(math::Mat<6,12> &B)
+void ElementTETRA0::makeB(Eigen::MatrixXd &B)
 {
-    double *B_L = B.ptr();
+    math::Mat<6,12> matB;
+    matB.zero();
+    double *B_L = matB.ptr();
     double b[4], c[4], d[4];
     //Eigen::MatrixXd mb(3,3), mc(3,3), md(3,3);
     int x=0, y = 1, z=2;
@@ -181,21 +203,60 @@ void ElementTETRA0::makeB(math::Mat<6,12> &B)
       B_L[60 + 3*i] = d[i]*A;
       B_L[62 + 3*i] = b[i]*A;
     }
+    B = Eigen::Map<Eigen::MatrixXd>(matB.transpose().ptr(),6,12);
 }
 
-void ElementTETRA0::makeC (math::MatSym<6> &C) {
-  const double A = E/((1.+my)*(1.-2.*my));
+void ElementTETRA0::makeT (Eigen::MatrixXd &T){
+  //From Lekhnitskiy, The theory of anysotropic body elasticity[in Russian]
+  T.setZero();
 
-  C.comp(0,0) = (1.-my)*A;
-  C.comp(0,1) = my*A;
-  C.comp(0,2) = my*A;
-  C.comp(1,1) = (1.-my)*A;
-  C.comp(1,2) = my*A;
-  C.comp(2,2) = (1.-my)*A;
+  double l1 = rotmat(0,0);
+  double l2 = rotmat(1,0);
+  double l3 = rotmat(2,0);
+  double m1 = rotmat(0,1);
+  double m2 = rotmat(1,1);
+  double m3 = rotmat(2,1);
+  double n1 = rotmat(0,2);
+  double n2 = rotmat(1,2);
+  double n3 = rotmat(2,2);
 
-  C.comp(3,3) = (1./2.-my)*A;
-  C.comp(4,4) = (1./2.-my)*A;
-  C.comp(5,5) = (1./2.-my)*A;
+  T <<    l1*l1, m1*m1, n1*n1, 2.*l1*m1, 2.*m1*n1, 2.*n1*l1, 
+          l2*l2, m2*m2, n2*n2, 2.*l2*m2, 2.*m2*n2, 2.*n2*l2,
+          l3*l3, m3*m3, n3*n3, 2.*l3*m3, 2.*m3*n3, 2.*n3*l3,
+          l1*l2, m1*m2, n1*n2, l1*m2+m1*l2, m1*n2+m2*n1, n1*l2 + n2*l1,
+          l2*l3, m2*m3, n2*n3, l2*m3+m2*l3, m2*n3+m3*n2, n2*l3+l2*n3,
+          l3*l1, m3*m1, n3*n1, l3*m1+m3*l1, m3*n1+m1*n3, n3*l1+n1*l3;
+}
+
+
+void ElementTETRA0::makeC (Eigen::MatrixXd &C) {
+  if (anisotropy == 0){
+    const double A = E/((1.+my)*(1.-2.*my));
+    C << (1.-my)*A , my*A,      my*A,       0.,           0.,           0.,
+         my*A,       (1.-my)*A, my*A,       0.,           0.,           0.,
+         my*A,        my*A,     (1.-my)*A,  0.,           0.,           0.,
+         0.,          0.,       0.,         (1./2.-my)*A, 0.,           0.,
+         0.,          0.,       0.,         0,            (1./2.-my)*A, 0.,
+         0.,          0.,       0.,         0,            0.,           (1./2.-my)*A;
+  }
+  else if (anisotropy == 1){
+    Eigen::MatrixXd P(6,6);
+    P <<    1./EX,       -myXY/EY, -myXZ/EZ,  0.,         0.,          0.,
+            -myXY/EY,    1./EY,    -myYZ/EZ,  0.,         0.,          0.,
+            -myXZ/EZ,    -myYZ/EZ,  1./EZ,    0.,         0.,          0.,
+            0.,    0.,       0.,              1./GXY,     0.,          0.,
+            0.,    0.,       0.,              0.,         1./GYZ,      0.,
+            0.,    0.,       0.,              0.,         0.,          1./GXZ;
+    
+    Eigen::MatrixXd T(6,6);
+    makeT(T);
+    // Elasticity matrix in local cs
+    Eigen::MatrixXd Cloc(6,6);
+    Cloc = P.inverse();
+    C = T*Cloc*T.transpose();
+  }
+  else
+    LOG(FATAL) << "Wrong anisotropy type!";
 }
 
 bool ElementTETRA0::getScalar(double* scalar, scalarQuery query, uint16 gp, const double scale) {

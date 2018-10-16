@@ -149,6 +149,8 @@ class Element {
                    std::initializer_list<Dof::dofType> _nodeDofs);
 
     void assembleK(Eigen::Ref<Eigen::MatrixXd> Ke, std::initializer_list<Dof::dofType> _nodeDofs);
+    void assembleK(Eigen::Ref<Eigen::MatrixXd> Ke, Eigen::Ref<Eigen::VectorXd> Fe, std::initializer_list<Dof::dofType> _nodeDofs);
+
 
     friend class FEStorage;
   protected:

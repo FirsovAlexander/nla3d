@@ -34,13 +34,33 @@ public:
 // on found DoFs solution.
   void update();
 
-  void makeB (math::Mat<6,12> &B);
-  void makeC (math::MatSym<6> &C);
+  void makeB (Eigen::MatrixXd &B);
+  void makeC (Eigen::MatrixXd &C);
+  // make rotating tensor
+  void makeT (Eigen::MatrixXd &T);
 
+  //0 - isotropy, 1 - ortotropy
+  int anisotropy = 0;
+  
+  // Isotropic coefficients
   // Elastic module
   double E = 0.0;
   // Poissons coef.
   double my = 0.0;
+
+  // Ortotropic coefficients
+  double EX = 0.;
+  double EY = 0.;
+  double EZ = 0.;
+  double myXY = 0.;
+  double myYZ = 0.;
+  double myXZ = 0.;  
+  double GXY = 0.;
+  double GYZ = 0.;
+  double GXZ = 0.;
+
+  //Rotation 3x3 matrix of local CS. [{x_loc}^T, {y_loc}^T, {z_loc}^T]
+  Eigen::MatrixXd rotmat;
 
   // coefficient of thermal expansion
   double alpha = 0.0;
