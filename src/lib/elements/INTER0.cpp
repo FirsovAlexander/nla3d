@@ -17,10 +17,18 @@ void ElementINTER0::buildK() {
 
   Eigen::MatrixXd K(3,3);
 
-  Eigen::MatrixXd T(3,3);
+  Eigen::MatrixXd T(6,6);
+  Eigen::MatrixXd theta(3,3);
   
   Ke.setZero();
   K.setZero();
+
+  K << ks , 0, 0,
+       0,  ks, 0,
+       0,  0, kn;
+
+  Ke << K ,  -K,
+       -K,    K;
 
   //Произвольный линенйно независмый базис
   math::Vec<3> s1(n[0],n[1]+1.,n[2]+1.);
@@ -33,22 +41,18 @@ void ElementINTER0::buildK() {
   s1 = s1*(1./s1.length());
   s2 = s2*(1./s2.length()); 
 
+  theta <<  s1[0],s2[0],n[0],
+            s1[1],s2[1],n[1],
+            s1[2],s2[2],n[2];
 
-  T <<  s1[0],s1[1],s1[2],
-        s2[0],s2[1],s2[2],
-        n[0], n[1], n[2];
+  Eigen::MatrixXd thetaTrans(3,3);
+  thetaTrans = theta.transpose();
+  Eigen::MatrixXd z = Eigen::MatrixXd::Zero(3,3);
 
-  Eigen::MatrixXd invT(3,3);
-  invT = T.inverse();
+  T << thetaTrans, z,
+       z, thetaTrans;
 
-  K << ks , 0, 0,
-       0,  ks, 0,
-       0,  0, kn;
-
-  K = T.transpose()*K*T;
-
-  Ke << K ,  -K,
-       -K,    K;
+  Ke = T.transpose()*Ke*T;
 
   assembleK(Ke, {Dof::UX, Dof::UY, Dof::UZ});
 }
