@@ -242,8 +242,8 @@ void ElementTETRA0::makeC (Eigen::MatrixXd &C) {
   else if (anisotropy == 1){
     Eigen::MatrixXd P(6,6);
     P <<    1./EX,       -myXY/EY, -myXZ/EZ,  0.,         0.,          0.,
-            -myXY/EY,    1./EY,    -myYZ/EZ,  0.,         0.,          0.,
-            -myXZ/EZ,    -myYZ/EZ,  1./EZ,    0.,         0.,          0.,
+            -myXY/EX,    1./EY,    -myYZ/EZ,  0.,         0.,          0.,
+            -myXZ/EX,    -myYZ/EY,  1./EZ,    0.,         0.,          0.,
             0.,    0.,       0.,              1./GXY,     0.,          0.,
             0.,    0.,       0.,              0.,         1./GYZ,      0.,
             0.,    0.,       0.,              0.,         0.,          1./GXZ;
