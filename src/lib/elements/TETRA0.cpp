@@ -217,7 +217,7 @@ void ElementTETRA0::makeT (Eigen::MatrixXd &T){
   double n2 = rotmat(1,2);
   double n3 = rotmat(2,2);
 
-  T <<    l1*l1, m1*m1, n1*n1, 2.*l1*m1, 2.*m1*n1, 2.*n1*l1, 
+  T <<    l1*l1, m1*m1, n1*n1, 2.*l1*m1, 2.*m1*n1, 2.*n1*l1,
           l2*l2, m2*m2, n2*n2, 2.*l2*m2, 2.*m2*n2, 2.*n2*l2,
           l3*l3, m3*m3, n3*n3, 2.*l3*m3, 2.*m3*n3, 2.*n3*l3,
           l1*l2, m1*m2, n1*n2, l1*m2+m1*l2, m1*n2+m2*n1, n1*l2 + n2*l1,
