@@ -8,7 +8,7 @@ ElementTETRA0::ElementTETRA0 () {
   type = ElementType::TETRA0;
   rotmat.resize(3,3);
   rotmat << 1., 0., 0.,
-            0., 1., 0., 
+            0., 1., 0.,
             0., 0., 1.;
 }
 
