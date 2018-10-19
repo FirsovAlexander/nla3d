@@ -129,7 +129,6 @@ void ElementTETRA0::makeB(Eigen::MatrixXd &B)
     matB.zero();
     double *B_L = matB.ptr();
     double b[4], c[4], d[4];
-    //Eigen::MatrixXd mb(3,3), mc(3,3), md(3,3);
     int x=0, y = 1, z=2;
 
     double x12 = storage->getNode(getNodeNumber(0)).pos[x] - storage->getNode(getNodeNumber(1)).pos[x];
