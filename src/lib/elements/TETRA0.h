@@ -60,7 +60,7 @@ public:
   double GXZ = 0.;
 
   //Rotation 3x3 matrix of local CS. [{x_loc}^T, {y_loc}^T, {z_loc}^T]
-  Eigen::MatrixXd rotmat;
+  Eigen::Matrix<double, 3, 3> rotmat;
 
   // coefficient of thermal expansion
   double alpha = 0.0;
