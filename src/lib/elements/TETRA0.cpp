@@ -27,7 +27,6 @@ void ElementTETRA0::buildK() {
           1. , storage->getNode(getNodeNumber(2)).pos[0] , storage->getNode(getNodeNumber(2)).pos[1] , storage->getNode(getNodeNumber(2)).pos[2] ,
           1. , storage->getNode(getNodeNumber(3)).pos[0] , storage->getNode(getNodeNumber(3)).pos[1] , storage->getNode(getNodeNumber(3)).pos[2];
 
-
   vol = matS.determinant()/6.;
   // Ke will store element stiffness matrix in global coordinates
   Eigen::MatrixXd matKe(12,12);
