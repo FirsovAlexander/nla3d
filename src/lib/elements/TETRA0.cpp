@@ -61,7 +61,6 @@ void ElementTETRA0::buildK() {
 
       Eigen::VectorXd stressE(6);
       stressE = Eigen::Map<Eigen::VectorXd>(stress.ptr(),6);
-      
       Eigen::MatrixXd matP;
       matP = matC.inverse();
       strainsE = matP*stressE;
