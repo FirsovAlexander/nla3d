@@ -116,7 +116,7 @@ void ElementTETRA0::update () {
     strainsE = strainsE-tStrains;
   }
   strainsE = strainsE - strainsE0;
-  Eigen::Map<Eigen::VectorXd>( strains.ptr(), 6) = strainsE;
+  Eigen::Map<Eigen::VectorXd>( strains.ptr(), 6) = strainsE - strainsE0;
 
   Eigen::VectorXd stressE(6);
   stressE.setZero();
