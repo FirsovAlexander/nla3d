@@ -65,7 +65,6 @@ void ElementTETRA0::buildK() {
       matP = matC.inverse();
       strainsE = matP*stressE;
     }
-    
     //termal initial strains
     if (alpha != 0. && T != 0.){
       Eigen::VectorXd tStrains(6);
