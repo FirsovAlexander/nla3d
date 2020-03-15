@@ -1,3 +1,5 @@
+#set(CMAKE_CXX_COMPILER "/usr/bin/g++")
+
 cmake_minimum_required (VERSION 2.6)
 
 project (NLA3D)
@@ -29,7 +31,7 @@ set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -msse2")
 
 # TODO: this should depend on compiler
 if(UNIX) 
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -fPIC")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -fPIC")
 endif()
 
 # Linking on Mac Os was not working without this, see `cmake  --help-policy CMP0042`
@@ -64,9 +66,9 @@ if (NLA3D_USE_MKL)
 
       # below code works fine only on UNIX systems..
       if (MKL_MULTI_THREADED)
-          SET(MKL_LINKER_ARGS "${MKL_LINKER_FLAGS} -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lmkl_rt -lmkl_def -liomp5 -lpthread -lm -ldl")
+          SET(MKL_LINKER_ARGS "${MKL_LINKER_FLAGS} -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lmkl_rt -liomp5 -lpthread -lm -ldl")
       else()
-        SET(MKL_LINKER_ARGS "${MKL_LINKER_FLAGS} -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_rt -lmkl_def -lpthread -lm -ldl")
+        SET(MKL_LINKER_ARGS "${MKL_LINKER_FLAGS} -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_rt -lpthread -lm -ldl")
       endif()
       SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${MKL_LINKER_ARGS}" )
       SET( CMAKE_SHARED_LINKER_FLAGS  "${CMAKE_SHARED_LINKER_FLAGS} ${MKL_LINKER_ARGS}" )
@@ -164,7 +166,7 @@ IF (NLA3D_PYTHON)
         # etc for the other available configuration types (MinSizeRel, RelWithDebInfo)
         endif ( MSVC )
         if (APPLE)
-            SET_TARGET_PROPERTIES(nla3d_py PROPERTIES SUFFIX ".so")
+            SET_TARGET_PROPERTIES(nla3d_py PROPERTIES SUFFIX ".dylib")
         endif (APPLE)
         ADD_DEPENDENCIES(nla3d_py swig)
 

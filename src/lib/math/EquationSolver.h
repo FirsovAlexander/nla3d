@@ -6,10 +6,16 @@
 #include "sys.h"
 #include "math/Mat.h"
 #include "math/SparseMatrix.h"
+#include <Eigen/Core>
+#include <memory>
+#include <Eigen/Sparse>
 
 namespace nla3d {
 
 namespace math {
+
+    using namespace Eigen;
+	typedef Eigen::SparseMatrix<double, RowMajor> Eig_sparse;
 
 class SparseSymMatrix;
 
@@ -44,6 +50,46 @@ protected:
 
   dMat matA = dMat(1, 1);
 };
+
+ class MultigridSolver: public EquationSolver {
+ private:
+ 	double theta, eps;
+
+ 	int recursion_depth;
+ 	int iterations_limit;
+ 	int resulting_iterations = 0;
+ 	double resulting_precision = 0;
+
+
+ 	/*this is needed for w and f multigrid cycles like
+ 	 *          *
+ 	  \  *  *  /
+ 	   \/ \/ \/      */
+ 	std::vector<int> levels;//indexes of levels on which coarsening continues till recursion_depth
+
+ 	/*interpolation operators needed
+ 	 * to transform the solution on coarser grid to finer scale*/
+ 	std::vector<std::shared_ptr<Eig_sparse>> interpols;
+ 	std::vector<std::shared_ptr<Eig_sparse>> coarse_equation_operators;
+
+ 	void smooth(const Eig_sparse &A, const VectorXd &b, VectorXd &u, int n_smoothing_iters);
+ 	void recursive_solver(const Eig_sparse &A, const VectorXd &b, VectorXd &u, int level, int n_smoothing_iters);
+ 	MatrixXi get_strong_influence_matrix(const Eig_sparse &A);
+ 	std::shared_ptr<Eig_sparse> get_interpolation_operator(const Eig_sparse &A);
+ 	void direct_solve(MatrixXd &A, VectorXd &b, VectorXd &u);
+ 	VectorXd solve(const Eig_sparse &A, const VectorXd &b, const VectorXd &x, int n_smoothing_iters = 5);
+ public:
+ 	virtual ~MultigridSolver() {};
+	 /*MultigridSolver(int recursion_depth, int iterations_limit, double theta = 0.25, double eps = 1e-9) :
+			 recursion_depth(recursion_depth), theta(theta), eps(eps), iterations_limit(iterations_limit) {};*/
+	 MultigridSolver(int recursion_depth, int iterations_limit, double theta = 0.25
+	 		, double eps = 1e-9, std::vector<int> levels=std::vector<int>()) :
+			 recursion_depth(recursion_depth), theta(theta), eps(eps)
+			 , iterations_limit(iterations_limit), levels(std::move(levels)) {};
+ 	virtual void solveEquations (math::SparseSymMatrix* matrix, double* rhs, double* unknowns);
+ 	virtual void factorizeEquations(math::SparseSymMatrix* matrix);
+ 	virtual void substituteEquations(math::SparseSymMatrix* matrix, double* rhs, double* unknowns);
+ };
 
 #ifdef NLA3D_USE_MKL
 class PARDISO_equationSolver : public EquationSolver {
