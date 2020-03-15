@@ -290,7 +290,6 @@ namespace nla3d {
 
 		void MultigridSolver::recursive_solver(const Eig_sparse &A, const VectorXd &b, VectorXd &u,
 												int level, int n_smoothing_iters) {
-			std::cout<<level<<std::endl;
 			static int level_index = 0;
 
 			if (level == recursion_depth || A.cols() <= 500) {
@@ -300,9 +299,7 @@ namespace nla3d {
 				return;
 			}
 
-			//std::cout << "rec" << std::endl;
 			smooth(A, b, u, n_smoothing_iters);
-			//std::cout << "smoothed" << std::endl;
 
 			std::shared_ptr<Eig_sparse> interpol;
 			std::shared_ptr<Eig_sparse> A_coarse;
@@ -320,7 +317,6 @@ namespace nla3d {
 			VectorXd residual = interpol->transpose() * (b - A * u);
 			VectorXd u_coarse = VectorXd::Zero(residual.size());
 
-			//std::cout << "solving coarser" << std::endl;
 			recursive_solver(*A_coarse, residual, u_coarse, level + 1, n_smoothing_iters);
 			u += (*interpol) * u_coarse;
 			smooth(A, b, u, n_smoothing_iters);
@@ -341,91 +337,51 @@ namespace nla3d {
 		std::shared_ptr<Eig_sparse>
 		MultigridSolver::get_interpolation_operator(const Eig_sparse &A) {
 
-			MatrixXi S = std::move(get_strong_influence_matrix(A));
+			auto S = get_strong_influence_matrix(A);
 
 			//  C/F coarsening
 			std::vector<char> Coarsening(A.cols());// coarse and fine grid indexes defined after c/f coarsening
 			std::vector<int> coarse_grid_indexes;
-			int total_nodes = 0;
 
-			while (total_nodes != Coarsening.size()) {
-				int lambda = 0;
-				int node_with_max_lambda = 0;
-
-				for (int j = 0; j < A.outerSize(); j++) {
-					if (Coarsening[j] != 0)
-						continue;
-					int S_and_U = 0, S_and_F = 0;
-					for (Eig_sparse::InnerIterator it(A, j); it; ++it) {
-						if (int row = it.row(); S(row, j)) {
-							if (Coarsening[row] == 'F')
-								S_and_F++;
-							else if (Coarsening[row] == 0)
-								S_and_U++;
-						}
-					}
-					if (int l = S_and_U + 2 * S_and_F; l > lambda) {
-						lambda = l;
-						node_with_max_lambda = j;
-					}
-				}
-				Coarsening[node_with_max_lambda] = 'C';
-				coarse_grid_indexes.push_back(node_with_max_lambda);
-				total_nodes++;
-				for (Eig_sparse::InnerIterator it(A, node_with_max_lambda); it; ++it) {
-					if (S(it.row(), node_with_max_lambda) && Coarsening[it.row()] == 0) {
-						Coarsening[it.row()] = 'F';
-						total_nodes++;
-					}
-				}
-			}
-
-			if (std::find(Coarsening.begin(), Coarsening.end(), 0) != Coarsening.end()) {
-				std::cout << "no" << std::endl;
-			}
+			coarsen(S, Coarsening, coarse_grid_indexes);
 
 			std::sort(coarse_grid_indexes.begin(), coarse_grid_indexes.end());
 			std::map<int, int> fine_to_coarse;
 			int coarse_order = 0;
-
 			for (int &i : coarse_grid_indexes)
 				fine_to_coarse[i] = coarse_order++;
 
 			std::shared_ptr<Eig_sparse> I(new Eig_sparse(A.cols(), coarse_grid_indexes.size()));
-			std::vector<double> positive_neighbours(A.cols()), positive_interpol_neighbours(A.cols()), negative_neighbours(
-					A.cols()), negative_interpol_neighbours(A.cols());
 			std::vector<Triplet<double >> entries;
-
-			for (int j = 0; j < A.outerSize(); j++) {
-				for (Eig_sparse::InnerIterator it(A, j); it; ++it) {
-					if (int i = it.row(); Coarsening[i] == 'F') {
-						if (i == j) continue;
-						if (it.value() < 0) {
-							negative_neighbours[i] += it.value();
-							if (Coarsening[j] == 'C') {
-								negative_interpol_neighbours[i] += it.value();
-							}
-						} else {
-							positive_neighbours[i] += it.value();
-							if (Coarsening[j] == 'C') {
-								positive_interpol_neighbours[i] += it.value();
-							}
-						}
-					}
-				}
+			for (int i : coarse_grid_indexes){
+				entries.emplace_back(i, fine_to_coarse[i], 1.);
 			}
 
-			for (int j = 0; j < A.outerSize(); j++) {
-				for (Eig_sparse::InnerIterator it(A, j); it; ++it) {
-					if (Coarsening[j] == 'C') {
-						if (int i = it.row(); i != j && Coarsening[i] == 'F')
-							entries.emplace_back(i, fine_to_coarse[j], it.value() < 0 ? -negative_neighbours[i] /
-																						negative_interpol_neighbours[i] *
-																						it.value() / A.coeff(i, i) :
-																	   -positive_neighbours[i] /
-																	   positive_interpol_neighbours[i] * it.value() /
-																	   A.coeff(i, i));
-						else if (i == j) entries.emplace_back(i, fine_to_coarse[i], 1.);
+			for (int i = 0; i < A.outerSize(); i++){
+				if (Coarsening[i] == 'C') continue;
+
+				double positive_neighbours = 0, positive_interpol_neighbours = 0
+						, negative_neighbours = 0, negative_interpol_neighbours = 0;
+
+				for (Eig_sparse::InnerIterator it(A, i); it; ++it){
+					if (it.col() == i) continue;
+
+					if (it.value() > 0){
+						positive_neighbours += it.value();
+						if (Coarsening[it.col()] == 'C')
+							positive_interpol_neighbours += it.value();
+					} else{
+						negative_neighbours += it.value();
+						if (Coarsening[it.col()] == 'C')
+							negative_interpol_neighbours += it.value();
+					}
+				}
+				for (Eig_sparse::InnerIterator it(A, i); it; ++it){
+					if(it.col() != i && Coarsening[it.col()] == 'C'){
+						double interpol_coeff = it.value() > 0 ? -positive_neighbours / positive_interpol_neighbours
+								: -negative_neighbours / negative_interpol_neighbours;
+						interpol_coeff *= it.value() / A.coeff(i, i);
+						entries.emplace_back(i, fine_to_coarse[it.col()], interpol_coeff);
 					}
 				}
 			}
@@ -442,15 +398,13 @@ namespace nla3d {
 			VectorXd u = x;
 			double norm = (A * u - b).norm();
 			std::cout << "residual norm before solving: " << norm << std::endl;
-			//std::ofstream f("multigrid.csv");
+
 			while (norm > eps) {
 				this->resulting_iterations++;
 
-				//recursive_solver(A, b, u, 1, n_smoothing_iters);
-				smooth(A, b, u, n_smoothing_iters);
+				recursive_solver(A, b, u, 1, n_smoothing_iters);
 				norm = (A * u - b).norm();
 				std::cout << "residual norm: " << norm << std::endl;
-				//f << resulting_iterations << "\t" << norm << std::endl;
 
 				if (resulting_iterations == iterations_limit) {
 					std::cout << "Iterations limit exceeded" << std::endl;
@@ -459,35 +413,38 @@ namespace nla3d {
 				}
 			}
 
-			//f.close();
-
 			this->resulting_precision = norm;
-
 			return u;
 		}
 
-		MatrixXi MultigridSolver::get_strong_influence_matrix(const Eig_sparse &A) {
-			MatrixXi S = MatrixXi::Zero(A.rows(), A.cols());
-			for (int i = 0; i < A.rows(); i++) {
+		/*has one in row i and column j if node j has strong influence on node i
+		 * otherwise zero*/
+		Eigen::SparseMatrix<int> MultigridSolver::get_strong_influence_matrix(const Eig_sparse &A) {
+			Eigen::SparseMatrix<int> S(A.rows(), A.cols());
+			std::vector<Triplet<int >> entries;
+
+			for (int i = 0; i < A.outerSize(); i++){
 				double max_positive = 0;
 				double min_negative = 0;
-				for (int j = 0; j < A.cols(); j++) {
-					if (i != j) {
-						if (double d = A.coeff(i, j); d < min_negative)
-							min_negative = d;
-						else if (d > max_positive)
-							max_positive = d;
+				for(Eig_sparse::InnerIterator it(A, i); it; ++it){
+					if(i != it.col()){
+						if (it.value() < min_negative)
+							min_negative = it.value();
+						else if (it.value() > max_positive)
+							max_positive = it.value();
 					}
 				}
-				for (int j = 0; j < A.cols(); j++) {
-					if (i != j) {
-						if (double d = A.coeff(i, j); (min_negative != 0 && d / min_negative >= theta) ||
-													  (max_positive != 0 && d / max_positive >= theta))
-							S(i, j) = 1;
+				for(Eig_sparse::InnerIterator it(A, i); it; ++it){
+					if(i != it.col()){
+						if ((min_negative != 0 && it.value() / min_negative >= theta) ||
+						(max_positive != 0 && it.value() / max_positive >= theta))
+							entries.emplace_back(i, it.col(), 1);
 					}
 				}
 			}
 
+			S.setFromTriplets(entries.begin(), entries.end());
+			S.makeCompressed();
 			return S;
 		}
 
@@ -544,6 +501,46 @@ namespace nla3d {
 						u[row] -= it.value() * u[it.col()];
 					}
 					u[row] /= a_ii;
+				}
+			}
+		}
+
+		void MultigridSolver::coarsen(Eigen::SparseMatrix<int> &S
+				, std::vector<char> &Coarsening, std::vector<int> &coarse_grid_indexes) {
+			int total_nodes = 0;
+
+			while (total_nodes != Coarsening.size()) {
+				/*finding the node that has strong influence on the maximum
+				 * size subsets of fine grid nodes and undecided nodes*/
+				int lambda = 0;
+				int node_with_max_lambda = -1;
+
+				for (int j = 0; j < S.outerSize(); j++){
+					if (Coarsening[j] != 0) continue;
+					int S_and_U = 0, S_and_F = 0;
+					for(Eigen::SparseMatrix<int>::InnerIterator it(S, j); it; ++it){
+						if (Coarsening[it.row()] == 'F')
+							S_and_F++;
+						else if (Coarsening[it.row()] == 0)
+							S_and_U++;
+					}
+					if (int l = S_and_U + 2 * S_and_F; l > lambda) {
+						lambda = l;
+						node_with_max_lambda = j;
+					}
+				}
+
+				//TODO: some nodes can occur to have no strong influence on any other one. they must become F-nodes
+
+				//this node becomes coarse grid node
+				Coarsening[node_with_max_lambda] = 'C';
+				coarse_grid_indexes.push_back(node_with_max_lambda);
+				total_nodes++;
+				for (Eigen::SparseMatrix<int>::InnerIterator it(S, node_with_max_lambda); it; ++it) {
+					if (Coarsening[it.row()] == 0) {
+						Coarsening[it.row()] = 'F';
+						total_nodes++;
+					}
 				}
 			}
 		}

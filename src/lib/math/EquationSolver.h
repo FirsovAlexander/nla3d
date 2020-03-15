@@ -72,12 +72,13 @@ protected:
  	std::vector<std::shared_ptr<Eig_sparse>> interpols;
  	std::vector<std::shared_ptr<Eig_sparse>> coarse_equation_operators;
 
- 	void smooth(const Eig_sparse &A, const VectorXd &b, VectorXd &u, int n_smoothing_iters);
- 	void recursive_solver(const Eig_sparse &A, const VectorXd &b, VectorXd &u, int level, int n_smoothing_iters);
- 	MatrixXi get_strong_influence_matrix(const Eig_sparse &A);
- 	std::shared_ptr<Eig_sparse> get_interpolation_operator(const Eig_sparse &A);
- 	void direct_solve(MatrixXd &A, VectorXd &b, VectorXd &u);
- 	VectorXd solve(const Eig_sparse &A, const VectorXd &b, const VectorXd &x, int n_smoothing_iters = 5);
+	 VectorXd solve(const Eig_sparse &A, const VectorXd &b, const VectorXd &x, int n_smoothing_iters = 4);
+	 void recursive_solver(const Eig_sparse &A, const VectorXd &b, VectorXd &u, int level, int n_smoothing_iters);
+	 void smooth(const Eig_sparse &A, const VectorXd &b, VectorXd &u, int n_smoothing_iters);
+	 Eigen::SparseMatrix<int> get_strong_influence_matrix(const Eig_sparse &A);
+	 void coarsen(Eigen::SparseMatrix<int> &S, std::vector<char> &Coarsening, std::vector<int> &coarse_grid_indexes);
+	 std::shared_ptr<Eig_sparse> get_interpolation_operator(const Eig_sparse &A);
+	 void direct_solve(MatrixXd &A, VectorXd &b, VectorXd &u);
  public:
  	virtual ~MultigridSolver() {};
 	 /*MultigridSolver(int recursion_depth, int iterations_limit, double theta = 0.25, double eps = 1e-9) :
