@@ -15,7 +15,7 @@ namespace nla3d {
 namespace math {
 
     using namespace Eigen;
-	typedef Eigen::SparseMatrix<double, RowMajor> Eig_sparse;
+	typedef Eigen::SparseMatrix<double, Eigen::RowMajor> Eig_sparse;
 
 class SparseSymMatrix;
 
@@ -69,7 +69,8 @@ protected:
 
  	/*interpolation operators needed
  	 * to transform the solution on coarser grid to finer scale*/
- 	std::vector<std::shared_ptr<Eig_sparse>> interpols;
+ 	std::vector<std::shared_ptr<Eig_sparse>> interpolation_operators;
+ 	/*matrix of coefficients A on different grid levels*/
  	std::vector<std::shared_ptr<Eig_sparse>> coarse_equation_operators;
 
 	 VectorXd solve(const Eig_sparse &A, const VectorXd &b, const VectorXd &x, int n_smoothing_iters = 4);

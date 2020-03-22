@@ -259,16 +259,20 @@ namespace nla3d {
 
 		void MultigridSolver::solveEquations(math::SparseSymMatrix *matrix, double *rhs, double *unknowns) {
 			std::vector<Triplet<double>> entries;
-			Eig_sparse A(matrix->nRows(), matrix->nColumns());
-			nEq = matrix->nColumns();
+			Eigen::SparseMatrix<double, RowMajor> A(matrix->nRows(), matrix->nColumns());
 
-			for (uint16 i = 0; i < nEq; i++)
-				for (uint16 j = 0; j < nEq; j++){
-					double val = matrix->value(i + 1, j + 1);
-					if(val != 0) entries.emplace_back(i, j, val);
+			for (int i = 0; i < matrix->nRows(); i++){
+				for (int j = matrix->getIofeirArray()[i] - 1; j < matrix->getIofeirArray()[i + 1] - 1; j++){
+					if (matrix->getValuesArray()[j] == 0) continue;
+					int j_ = matrix->getColumnsArray()[j] - 1;
+					entries.emplace_back(i, j_, matrix->getValuesArray()[j]);
+					if(i != j_) entries.emplace_back(j_, i, matrix->getValuesArray()[j]);
 				}
+			}
 
 			A.setFromTriplets(entries.begin(), entries.end());
+			A.makeCompressed();
+
 			VectorXd b(matrix->nColumns());
 			VectorXd u = VectorXd::Zero(matrix->nColumns());
 
@@ -304,12 +308,12 @@ namespace nla3d {
 			std::shared_ptr<Eig_sparse> interpol;
 			std::shared_ptr<Eig_sparse> A_coarse;
 
-			if (interpols.size() >= level) {
+			if (interpolation_operators.size() >= level) {
 				A_coarse = coarse_equation_operators[level - 1];
-				interpol = interpols[level - 1];
+				interpol = interpolation_operators[level - 1];
 			} else {
 				interpol = get_interpolation_operator(A);
-				interpols.push_back(interpol);
+				interpolation_operators.push_back(interpol);
 				A_coarse = std::make_shared<Eig_sparse>((interpol->transpose() * A * (*interpol)));
 				coarse_equation_operators.push_back(A_coarse);
 			}
@@ -333,7 +337,6 @@ namespace nla3d {
 
 		}
 
-//template<typename SmoothingSolver>
 		std::shared_ptr<Eig_sparse>
 		MultigridSolver::get_interpolation_operator(const Eig_sparse &A) {
 
@@ -391,7 +394,6 @@ namespace nla3d {
 			return I;
 		}
 
-//template<typename SmoothingSolver>
 		VectorXd
 		MultigridSolver::solve(const Eig_sparse &A, const VectorXd &b, const VectorXd &x,
 								int n_smoothing_iters) {
