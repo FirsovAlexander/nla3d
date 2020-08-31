@@ -588,5 +588,26 @@ void FEStorage::learnTopology() {
   }
 }
 
+//this is a workaround to get coordinates of grid nodes of all unknowns
+//for simple extension problem, where either all three dofs are present or absent in vector
+std::vector<double> FEStorage::dof_coordinate_mapping(){
+  assert (nodeDofs.getNumberOfEntities() > 0);
+  assert (_nConstrainedDofs > 0);
 
+  std::vector<double> coords;
+  for (int i = 1; i <= nNodes(); i++){
+    for (int t_id = 0; t_id < 3; t_id++){
+      Dof *dof = nodeDofs.getDof(i, static_cast<Dof::dofType>(t_id));
+      if (dof && dof->isConstrained) {
+        //std::cout << nodes[i-1]->pos[0] << " " << nodes[i-1]->pos[1] << " " << nodes[i-1]->pos[2] << std::endl;
+        assert(nodes[i-1]->pos[2] == 0.);
+      }
+      if (dof && !dof->isConstrained){
+        assert(nodes[i-1]->pos[2] != 0.);
+        coords.push_back(nodes[i - 1]->pos[t_id]);
+      }
+    }
+  }
+  return coords;
+}
 } // namespace nla3d 

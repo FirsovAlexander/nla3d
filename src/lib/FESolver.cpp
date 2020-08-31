@@ -334,16 +334,8 @@ LinearFESolver::LinearFESolver() : FESolver() {
 
 }
 
-void LinearFESolver::solve () {
-  TIMED_SCOPE(timer, "solution");
-  LOG(INFO) << "Start the solution process";
+void LinearFESolver::init(){
   CHECK_NOTNULL(storage);
-  CHECK_NOTNULL(eqSolver);
-
-  // setup matrix properties for EquationSolver 
-  eqSolver->setSymmetric(true);
-  eqSolver->setPositive(false);
-
   // This is right procedures to init solution infrmation in FEStorage:
   // 1. Register all DoFs that will be used in solution
   storage->initDofs();
@@ -354,6 +346,16 @@ void LinearFESolver::solve () {
   storage->assignEquationNumbers();
   // 4. Allocate memory, initialize matrices, assign pointer on this data.
   initSolutionData();
+}
+
+void LinearFESolver::solve () {
+  TIMED_SCOPE(timer, "solution");
+  LOG(INFO) << "Start the solution process";
+  CHECK_NOTNULL(eqSolver);
+
+  // setup matrix properties for EquationSolver 
+  eqSolver->setSymmetric(true);
+  eqSolver->setPositive(false);
 
   for (size_t i = 0; i < getNumberOfPostProcessors(); i++) {
     postProcessors[i]->pre();

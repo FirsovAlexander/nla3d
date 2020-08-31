@@ -198,6 +198,7 @@ class LinearFESolver : public FESolver {
   public:
     LinearFESolver();
     virtual void solve();
+    void init();
 };
 
 // Iterative solver for Full Newton-Raphson procedure

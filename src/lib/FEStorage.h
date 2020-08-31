@@ -268,6 +268,10 @@ public:
   // FESolver should call this procedure to update element solution data
   // NOTE: actually Element::update() is called
 	void updateResults();
+  // Needed to obtain mapping of node coordinates with respect to the unknown dofs that are to be
+  // calculated. For example if a node has dofs ux and uz as unknowns its x and z coordinates will be added.
+  // This method is provided to generate the near-kernel vectors, needed by aggregation-based multigrid solver
+  std::vector<double> dof_coordinate_mapping();
 
 private:
   // fill `topology` data based on the current mesh (Element::nodes numbers)
